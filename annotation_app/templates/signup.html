@@ -33,10 +33,10 @@
 
       <!-- STATE -->
       <div class="field">
-        <label class="label">State</label>
+        <label class="label">Subregion</label>
         <div class="control select is-fullwidth">
           <select name="state" required>
-            <option value="">Select state</option>
+            <option value="">Select subregion</option>
             {% for region, states in region_state_map.items() %}
               {% for s in states %}
                 <option value="{{ s }}">{{ s }}</option>

@@ -15,7 +15,7 @@
 
   <!-- REGION -->
   <div class="column">
-    <label class="label">Region</label>
+    <label class="label">Zone</label>
     <input type="hidden"
            name="region"
            value="{% if draft %}{{ draft.region }}{% else %}{{ user.region }}{% endif %}">
@@ -41,13 +41,13 @@
 
   <!-- STATE -->
   <div class="column">
-    <label class="label">State</label>
+    <label class="label">Subregion</label>
     <input type="hidden"
            name="state"
            value="{% if draft %}{{ draft.state }}{% else %}{{ user.state }}{% endif %}">
     <div class="control select is-fullwidth">
       <select id="state" required disabled>
-        <option value="">Select state</option>
+        <option value="">Select subregion</option>
       </select>
     </div>
   </div>
