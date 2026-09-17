@@ -1,7 +1,13 @@
 # app.py
 from flask import Flask, render_template, request, redirect, jsonify, url_for, abort, Response, send_from_directory
 from storage import *
-from sheets import *
+
+import os
+if os.getenv("LOCAL_DEMO") == "1":
+    from local_sheets import *
+else:
+    from sheets import *
+    
 from flask import session
 import json
 from config import *
