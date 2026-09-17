@@ -178,10 +178,10 @@
           <input type="hidden" name="isAccept" value="{{ draft.isAccept if draft else '' }}">
           {% set sticky_review_status = (draft.isAccept if draft else "") | default("", true) | trim | lower %}
 
-          <!-- REGION / STATE -->
+          <!-- Zone / Subregion -->
           <div class="card mb-5">
             <div class="card-content">
-              {% include "components/region_state.html" %}
+              {% include "components/Zone_Subregion.html" %}
             </div>
           </div>
 

@@ -13,41 +13,41 @@
     </div>
   </div>
 
-  <!-- REGION -->
+  <!-- Zone -->
   <div class="column">
     <label class="label">Zone</label>
     <input type="hidden"
-           name="region"
-           value="{% if draft %}{{ draft.region }}{% else %}{{ user.region }}{% endif %}">
+           name="Zone"
+           value="{% if draft %}{{ draft.Zone }}{% else %}{{ user.Zone }}{% endif %}">
     <div class="control select is-fullwidth">
-      <select id="region"
+      <select id="Zone"
           required
-          onchange="updateState()"
+          onchange="updateSubregion()"
           disabled>
 
-        {% for region in region_state_map.keys() %}
-          <option value="{{ region }}"
-            {% if draft and draft.region == region %}
+        {% for Zone in Zone_Subregion_map.keys() %}
+          <option value="{{ Zone }}"
+            {% if draft and draft.Zone == Zone %}
               selected
-            {% elif not draft and user.region == region %}
+            {% elif not draft and user.Zone == Zone %}
               selected
             {% endif %}>
-            {{ region }}
+            {{ Zone }}
           </option>
         {% endfor %}
       </select>
     </div>
   </div>
 
-  <!-- STATE -->
+  <!-- Subregion -->
   <div class="column">
-    <label class="label">Subregion</label>
+    <label class="label">SubZone</label>
     <input type="hidden"
-           name="state"
-           value="{% if draft %}{{ draft.state }}{% else %}{{ user.state }}{% endif %}">
+           name="Subregion"
+           value="{% if draft %}{{ draft.Subregion }}{% else %}{{ user.Subregion }}{% endif %}">
     <div class="control select is-fullwidth">
-      <select id="state" required disabled>
-        <option value="">Select subregion</option>
+      <select id="Subregion" required disabled>
+        <option value="">Select subZone</option>
       </select>
     </div>
   </div>

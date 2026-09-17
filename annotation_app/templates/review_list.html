@@ -10,9 +10,9 @@
         <h1 class="title">Inter-Annotator Review Queue</h1>
         <p class="subtitle mb-0">
           {% if session.get("user") and session["user"]["role"] == "admin" %}
-            Review approved annotations across all states (excluding your own submissions).
+            Review approved annotations across all Subregions (excluding your own submissions).
           {% else %}
-            Review approved annotations from your own state (excluding your own submissions).
+            Review approved annotations from your own Subregion (excluding your own submissions).
           {% endif %}
         </p>
       </div>
@@ -35,7 +35,7 @@
         {% else %}
           {% for cluster in clustered_records %}
             <h3 class="title is-6 mt-4 mb-2">
-              Region: {{ cluster.region }} | State: {{ cluster.state }}
+              Zone: {{ cluster.Zone }} | Subregion: {{ cluster.Subregion }}
             </h3>
             <table class="table is-fullwidth is-hoverable is-zebra-neutral mb-5">
               <thead>

@@ -1,46 +1,46 @@
 <script>
-  const regionStateMap = {{ region_state_map | tojson }};
+  const ZoneSubregionMap = {{ Zone_Subregion_map | tojson }};
 
   // Determine defaults:
-  const defaultRegion = "{% if draft %}{{ draft.region }}{% else %}{{ user.region if user }}{% endif %}";
-  const defaultState  = "{% if draft %}{{ draft.state }}{% else %}{{ user.state if user }}{% endif %}";
+  const defaultZone = "{% if draft %}{{ draft.Zone }}{% else %}{{ user.Zone if user }}{% endif %}";
+  const defaultSubregion  = "{% if draft %}{{ draft.Subregion }}{% else %}{{ user.Subregion if user }}{% endif %}";
 
-  function updateState() {
-    const regionSelect = document.getElementById("region");
-    const stateSelect = document.getElementById("state");
+  function updateSubregion() {
+    const ZoneSelect = document.getElementById("Zone");
+    const SubregionSelect = document.getElementById("Subregion");
 
-    const region = regionSelect.value;
+    const Zone = ZoneSelect.value;
 
     // Reset dropdown
-    stateSelect.innerHTML = "<option value=''>Select subregion</option>";
+    SubregionSelect.innerHTML = "<option value=''>Select subZone</option>";
 
-    if (!region || !regionStateMap[region]) return;
+    if (!Zone || !ZoneSubregionMap[Zone]) return;
 
-    const states = regionStateMap[region];
+    const Subregions = ZoneSubregionMap[Zone];
 
-    states.forEach(function(state) {
+    Subregions.forEach(function(Subregion) {
       const option = document.createElement("option");
-      option.value = state;
-      option.text = state;
+      option.value = Subregion;
+      option.text = Subregion;
 
-      // Auto-select correct state
-      if (state === defaultState) {
+      // Auto-select correct Subregion
+      if (Subregion === defaultSubregion) {
         option.selected = true;
       }
 
-      stateSelect.appendChild(option);
+      SubregionSelect.appendChild(option);
     });
   }
 
   document.addEventListener("DOMContentLoaded", function () {
 
-    const regionSelect = document.getElementById("region");
+    const ZoneSelect = document.getElementById("Zone");
 
-    if (defaultRegion) {
-      regionSelect.value = defaultRegion;
+    if (defaultZone) {
+      ZoneSelect.value = defaultZone;
     }
 
-    updateState();
+    updateSubregion();
     renderAllOutputPreviews();
   });
 </script>
@@ -229,13 +229,13 @@ function toggleStickyReview() {
 
 async function checkPromptSimilarity() {
   const promptBox = document.getElementById("base_prompt_input");
-  const stateHidden = document.querySelector("input[name='state']");
+  const SubregionHidden = document.querySelector("input[name='Subregion']");
   const currentAnnotationInput = document.getElementById("current_annotation_id");
   const btn = document.getElementById("check_similarity_btn");
   const resultBox = document.getElementById("similarity_results");
 
   const prompt = promptBox ? promptBox.value.trim() : "";
-  const state = stateHidden ? stateHidden.value.trim() : "";
+  const Subregion = SubregionHidden ? SubregionHidden.value.trim() : "";
   const currentAnnotationId = currentAnnotationInput ? currentAnnotationInput.value.trim() : "";
 
   if (!prompt) {
@@ -257,7 +257,7 @@ async function checkPromptSimilarity() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         prompt,
-        state,
+        Subregion,
         current_annotation_id: currentAnnotationId
       })
     });
@@ -282,7 +282,7 @@ async function checkPromptSimilarity() {
     }).join("");
 
     resultBox.innerHTML = `
-      <p><strong>Similar prompts found. Another annotator from the same state has used a similar prompt. Please manually ensure that your prompt is different.</strong></p>
+      <p><strong>Similar prompts found. Another annotator from the same Subregion has used a similar prompt. Please manually ensure that your prompt is different.</strong></p>
       <ul>${lines}</ul>
     `;
   } catch (err) {
