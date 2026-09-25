@@ -27,11 +27,11 @@
       <div class="card-content">
         <form method="POST">
           <input type="hidden" name="action" value="save">
-          <input type="hidden" name="Subregion" id="notes_Subregion" value="{{ default_Subregion }}">
+          <input type="hidden" name="State" id="notes_State" value="{{ default_State }}">
 
           <div class="field mb-4">
-            <label class="label">Subregion</label>
-            <input class="input" type="text" value="{{ default_Subregion }}" readonly>
+            <label class="label">State</label>
+            <input class="input" type="text" value="{{ default_State }}" readonly>
           </div>
 
           <div class="field">
@@ -121,12 +121,12 @@ function escapeHtml(value) {
 
 async function checkNotesPromptSimilarity() {
   const promptBox = document.getElementById("notes_prompt_input");
-  const SubregionInput = document.getElementById("notes_Subregion");
+  const StateInput = document.getElementById("notes_State");
   const btn = document.getElementById("notes_check_similarity_btn");
   const resultBox = document.getElementById("notes_similarity_results");
 
   const prompt = promptBox ? promptBox.value.trim() : "";
-  const Subregion = SubregionInput ? SubregionInput.value.trim() : "";
+  const State = StateInput ? StateInput.value.trim() : "";
 
   if (!prompt) {
     alert("Prompt is empty.");
@@ -145,7 +145,7 @@ async function checkNotesPromptSimilarity() {
     const response = await fetch("/check-prompt-similarity", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, Subregion })
+      body: JSON.stringify({ prompt, State })
     });
 
     const payload = await response.json();

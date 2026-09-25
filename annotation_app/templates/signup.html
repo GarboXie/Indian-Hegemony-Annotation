@@ -31,14 +31,14 @@
         </label>
       </div>
 
-      <!-- Subregion -->
+      <!-- State -->
       <div class="field">
-        <label class="label">SubZone</label>
+        <label class="label">State</label>
         <div class="control select is-fullwidth">
-          <select name="Subregion" required>
-            <option value="">Select subZone</option>
-            {% for Zone, Subregions in Zone_Subregion_map.items() %}
-              {% for s in Subregions %}
+          <select name="State" required>
+            <option value="">Select State</option>
+            {% for Region, States in region_state_map.items() %}
+              {% for s in States %}
                 <option value="{{ s }}">{{ s }}</option>
               {% endfor %}
             {% endfor %}

@@ -165,7 +165,7 @@
       <div class="card-content">
         <h1 class="title">Annotation Task</h1>
         <p class="subtitle">
-          This task evaluates cultural hegemony in LLM-generated responses within the Chinese cultural zone.
+          This task evaluates cultural hegemony in LLM-generated responses within the Chinese cultural Region.
         </p>
       </div>
     </div>
@@ -178,10 +178,10 @@
           <input type="hidden" name="isAccept" value="{{ draft.isAccept if draft else '' }}">
           {% set sticky_review_status = (draft.isAccept if draft else "") | default("", true) | trim | lower %}
 
-          <!-- Zone / Subregion -->
+          <!-- Region / State -->
           <div class="card mb-5">
             <div class="card-content">
-              {% include "components/Zone_Subregion.html" %}
+              {% include "components/region_state.html" %}
             </div>
           </div>
 

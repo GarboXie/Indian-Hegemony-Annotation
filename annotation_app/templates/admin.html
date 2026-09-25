@@ -209,22 +209,22 @@
     gap: 1rem;
   }
 
-  .iaa-review-Subregion-card {
+  .iaa-review-State-card {
     border: 1px solid #d8e7fb;
     border-radius: 16px;
     background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
     padding: 1rem 1.05rem;
   }
 
-  .iaa-review-Subregion-title {
+  .iaa-review-State-title {
     color: #244368;
     font-size: 1rem;
     font-weight: 700;
     margin-bottom: 0.75rem;
   }
 
-  .iaa-review-Subregion-card table th,
-  .iaa-review-Subregion-card table td {
+  .iaa-review-State-card table th,
+  .iaa-review-State-card table td {
     vertical-align: middle;
   }
 
@@ -419,7 +419,7 @@
         </div>
         <div id="adminIaaReviewStats" class="admin-stats-placeholder">
           <p class="has-text-weight-semibold mb-2">Inter-annotator review stats are not loaded yet.</p>
-          <p class="has-text-grey mb-0">Use the button above to fetch the Subregion-wise reviewer completion counts dynamically.</p>
+          <p class="has-text-grey mb-0">Use the button above to fetch the State-wise reviewer completion counts dynamically.</p>
         </div>
       </div>
     </div>
@@ -430,13 +430,13 @@
         <form method="GET" action="{{ url_for('admin') }}">
           <div class="columns is-variable is-4">
             <div class="column">
-              <label class="label">Subregion</label>
+              <label class="label">State</label>
               <div class="control select is-fullwidth">
-                <select name="Subregion">
-                  <option value="">All Subregions</option>
-                  {% for Subregion in available_Subregions %}
-                    <option value="{{ Subregion }}" {% if query_Subregion == Subregion %}selected{% endif %}>
-                      {{ Subregion }}
+                <select name="State">
+                  <option value="">All States</option>
+                  {% for State in available_States %}
+                    <option value="{{ State }}" {% if query_State == State %}selected{% endif %}>
+                      {{ State }}
                     </option>
                   {% endfor %}
                 </select>
@@ -575,7 +575,7 @@
               <tr>
                 <th width="7%">Sr. No.</th>
                 <th width="9%">Date</th>
-                <th width="10%">Subregion</th>
+                <th width="10%">State</th>
                 <th width="9%">Annotator</th>
                 <th width="10%">Status</th>
                 <th width="22%">Base Prompt</th>
@@ -590,7 +590,7 @@
               <tr class="{% if r._is_onboarded %}onboarded-row{% endif %}">
                 <td>{{ ((current_page - 1) * results_per_page) + loop.index }}.</td>
                 <td>{{ (r.timestamp or r.created_at or "")[:10] }}</td>
-                <td>{{ r.Subregion }}</td>
+                <td>{{ r.State }}</td>
                 <td>{{ r.annotator_name }}</td>
                 <td>
                   {% if r._is_completed %}
@@ -690,15 +690,15 @@
   const iaaReviewStatsContainer = document.getElementById("adminIaaReviewStats");
   const loadIaaReviewStatsBtn = document.getElementById("loadIaaReviewStatsBtn");
   let adminDashboardCharts = [];
-  const SubregionPalette = [
+  const StatePalette = [
     "#4F46E5", "#0EA5E9", "#22C55E", "#F59E0B", "#EF4444",
     "#14B8A6", "#A855F7", "#84CC16", "#EAB308", "#F97316",
     "#06B6D4", "#10B981", "#F43F5E", "#8B5CF6", "#F97316",
     "#3B82F6", "#65A30D", "#D97706", "#DC2626", "#7C3AED"
   ];
 
-  function colorsForSubregions(labels, SubregionColorMap) {
-    return labels.map((label) => SubregionColorMap[label] || "#94A3B8");
+  function colorsForStates(labels, StateColorMap) {
+    return labels.map((label) => StateColorMap[label] || "#94A3B8");
   }
 
   function destroyAdminDashboardCharts() {
@@ -706,7 +706,7 @@
     adminDashboardCharts = [];
   }
 
-  function buildPieChart(canvasId, labels, counts, emptyMessage, SubregionColorMap) {
+  function buildPieChart(canvasId, labels, counts, emptyMessage, StateColorMap) {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
     if (counts.some((x) => x > 0)) {
@@ -716,7 +716,7 @@
           labels,
           datasets: [{
             data: counts,
-            backgroundColor: colorsForSubregions(labels, SubregionColorMap),
+            backgroundColor: colorsForStates(labels, StateColorMap),
             borderWidth: 1
           }]
         },
@@ -827,15 +827,15 @@
         <div class="column is-3"><div class="box has-text-centered"><p class="heading">Registered Annotators</p><p class="title is-4">${data.totals.registered_annotators}</p></div></div>
         <div class="column is-3"><div class="box has-text-centered"><p class="heading">Active Annotators</p><p class="title is-4">${data.totals.active_annotators}</p></div></div>
         <div class="column is-3"><div class="box has-text-centered"><p class="heading">Total Annotations</p><p class="title is-4">${data.totals.total_annotations}</p></div></div>
-        <div class="column is-3"><div class="box has-text-centered"><p class="heading">Subregions Covered</p><p class="title is-4">${data.totals.Subregions_covered}</p></div></div>
+        <div class="column is-3"><div class="box has-text-centered"><p class="heading">States Covered</p><p class="title is-4">${data.totals.States_covered}</p></div></div>
       </div>
       <div class="card mt-4">
         <div class="card-content">
           <h2 class="title is-5">Progress Visualizations</h2>
           <div class="columns is-variable is-5 is-multiline">
-            <div class="column is-4"><p class="has-text-weight-semibold mb-2">Total Annotations by Subregion</p><div style="max-width: 420px;"><canvas id="SubregionAnnotationsChart" height="220"></canvas></div></div>
-            <div class="column is-4"><p class="has-text-weight-semibold mb-2">Total Validated Annotations by Subregion</p><div style="max-width: 420px;"><canvas id="reviewedSubregionAnnotationsChart" height="220"></canvas></div></div>
-            <div class="column is-4"><p class="has-text-weight-semibold mb-2">Approved Annotations by Subregion</p><div style="max-width: 420px;"><canvas id="approvedSubregionAnnotationsChart" height="220"></canvas></div></div>
+            <div class="column is-4"><p class="has-text-weight-semibold mb-2">Total Annotations by State</p><div style="max-width: 420px;"><canvas id="StateAnnotationsChart" height="220"></canvas></div></div>
+            <div class="column is-4"><p class="has-text-weight-semibold mb-2">Total Validated Annotations by State</p><div style="max-width: 420px;"><canvas id="reviewedStateAnnotationsChart" height="220"></canvas></div></div>
+            <div class="column is-4"><p class="has-text-weight-semibold mb-2">Approved Annotations by State</p><div style="max-width: 420px;"><canvas id="approvedStateAnnotationsChart" height="220"></canvas></div></div>
           </div>
           <hr>
           <div>
@@ -855,39 +855,39 @@
 
     destroyAdminDashboardCharts();
 
-    const SubregionLabels = (data.Subregion_stats || []).map((row) => row.Subregion);
-    const SubregionCounts = (data.Subregion_stats || []).map((row) => row.annotation_count);
-    const reviewedSubregionLabels = (data.reviewed_Subregion_stats || []).map((row) => row.Subregion);
-    const reviewedSubregionCounts = (data.reviewed_Subregion_stats || []).map((row) => row.annotation_count);
-    const approvedSubregionLabels = (data.approved_Subregion_stats || []).map((row) => row.Subregion);
-    const approvedSubregionCounts = (data.approved_Subregion_stats || []).map((row) => row.annotation_count);
-    const allChartSubregions = Array.from(new Set(
-      [...SubregionLabels, ...reviewedSubregionLabels, ...approvedSubregionLabels]
+    const StateLabels = (data.State_stats || []).map((row) => row.State);
+    const StateCounts = (data.State_stats || []).map((row) => row.annotation_count);
+    const reviewedStateLabels = (data.reviewed_State_stats || []).map((row) => row.State);
+    const reviewedStateCounts = (data.reviewed_State_stats || []).map((row) => row.annotation_count);
+    const approvedStateLabels = (data.approved_State_stats || []).map((row) => row.State);
+    const approvedStateCounts = (data.approved_State_stats || []).map((row) => row.annotation_count);
+    const allChartStates = Array.from(new Set(
+      [...StateLabels, ...reviewedStateLabels, ...approvedStateLabels]
     )).sort((a, b) => a.localeCompare(b));
-    const SubregionColorMap = Object.fromEntries(
-      allChartSubregions.map((Subregion, index) => [Subregion, SubregionPalette[index % SubregionPalette.length]])
+    const StateColorMap = Object.fromEntries(
+      allChartStates.map((State, index) => [State, StatePalette[index % StatePalette.length]])
     );
 
-    buildPieChart("SubregionAnnotationsChart", SubregionLabels, SubregionCounts, "No annotation data yet.", SubregionColorMap);
-    buildPieChart("reviewedSubregionAnnotationsChart", reviewedSubregionLabels, reviewedSubregionCounts, "No reviewed annotations yet.", SubregionColorMap);
-    buildPieChart("approvedSubregionAnnotationsChart", approvedSubregionLabels, approvedSubregionCounts, "No approved annotations yet.", SubregionColorMap);
+    buildPieChart("StateAnnotationsChart", StateLabels, StateCounts, "No annotation data yet.", StateColorMap);
+    buildPieChart("reviewedStateAnnotationsChart", reviewedStateLabels, reviewedStateCounts, "No reviewed annotations yet.", StateColorMap);
+    buildPieChart("approvedStateAnnotationsChart", approvedStateLabels, approvedStateCounts, "No approved annotations yet.", StateColorMap);
     buildDailyProgressChart(dailyProgress);
   }
 
   function renderIaaReviewStats(data) {
-    const SubregionGroups = data.Subregion_groups || [];
+    const StateGroups = data.State_groups || [];
     if (!iaaReviewStatsContainer) return;
 
-    if (!SubregionGroups.length) {
+    if (!StateGroups.length) {
       iaaReviewStatsContainer.innerHTML = "<p class='has-text-grey mb-0'>No completed inter-annotator reviews found yet.</p>";
       return;
     }
 
     iaaReviewStatsContainer.innerHTML = `
       <div class="iaa-review-stats-shell">
-        ${SubregionGroups.map((group) => `
-          <div class="iaa-review-Subregion-card">
-            <h3 class="iaa-review-Subregion-title">${group.Subregion}</h3>
+        ${StateGroups.map((group) => `
+          <div class="iaa-review-State-card">
+            <h3 class="iaa-review-State-title">${group.State}</h3>
             <table class="table is-fullwidth is-hoverable is-zebra-neutral mb-0">
               <thead>
                 <tr>

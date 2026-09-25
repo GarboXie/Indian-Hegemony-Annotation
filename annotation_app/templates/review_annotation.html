@@ -257,7 +257,7 @@
       <div class="card-content">
         <h1 class="title">Review Annotation</h1>
         <p class="subtitle mb-2">Evaluate this annotation, its model outputs, and the ground truth.</p>
-        <p><strong>Zone:</strong> {{ record.Zone }} | <strong>Subregion:</strong> {{ record.Subregion }}</p>
+        <p><strong>Region:</strong> {{ record.Region }} | <strong>State:</strong> {{ record.State }}</p>
       </div>
     </div>
 
@@ -292,7 +292,7 @@
             </div>
 
             <div class="field review-question-block">
-              <label class="label reviewer-question">Q3. The prompts explore a relevant cultural context/component from the Subregion.</label>
+              <label class="label reviewer-question">Q3. The prompts explore a relevant cultural context/component from the State.</label>
               {{ render_scale("prompt_q2", selected_answers, agreement_scale_options) }}
               {{ render_comment_box("prompt_q2_comment", selected_answers, true) }}
             </div>
