@@ -124,7 +124,7 @@ def generate_llama_output(prompt: str) -> str:
         messages = [
             {
                 "role": "system",
-                "comtent": "Answer is no more than 150 words in English."
+                "content": "Answer is no more than 150 words in English."
             },
             {
                 "role": "user",
