@@ -40,6 +40,8 @@ _deepseek_client =  OpenAI(api_key=KEYS["DEEPSEEK_API_KEY"], base_url="https://a
 
 #     return response.text
 
+_groq_client = OpenAI(api_key = KEYS["GROQ_API_KEY"], base_url = "https://api.groq.com/openai/v1")
+
 def generate_gemini_output(prompt: str) -> str:
     """
     Gemini Output Generator
@@ -115,30 +117,21 @@ def generate_deepseek_output(prompt: str) -> str:
 
 def generate_llama_output(prompt: str) -> str:
     """
-    GPT-OSS-120B Output Generator
+    Generate a GPT-OSS-120B response through Groq.
     """
-    response = requests.post(
-    url="https://openrouter.ai/api/v1/chat/completions",
-    headers={
-        "Authorization": f"Bearer {KEYS["OPENAI_API_KEY"]}",
-        "Content-Type": "application/json",
-    },
-    data=json.dumps({
-        "model": "openai/gpt-oss-120b",
-        "messages": [
-                {
-                    "role": "system",
-                    "content": "Answer in no more than 150 words in English."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-        "reasoning": {"enabled": True}
-    })
+    completion = _groq_client.chat.completions.create(
+        model = "openai/gpt-oss-120b",
+        messages = [
+            {
+                "role": "system",
+                "comtent": "Answer is no more than 150 words in English."
+            },
+            {
+                "role": "user",
+                "content":prompt
+            }
+        ],
+        temperature = 0.8,
+        max_tokens = 300
     )
-    response = response.json()
-    response = response['choices'][0]['message']['content']
-    return response
-
+    return completion.choices[0].message.content or ""
