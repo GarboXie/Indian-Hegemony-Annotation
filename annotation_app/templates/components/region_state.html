@@ -17,8 +17,8 @@
   <div class="column">
     <label class="label">Region</label>
     <input type="hidden"
-           name="Region"
-           value="{% if draft %}{{ draft.Region }}{% else %}{{ user.Region }}{% endif %}">
+           name="region"
+           value="{% if draft %}{{ draft.region }}{% else %}{{ user.region }}{% endif %}">
     <div class="control select is-fullwidth">
       <select id="Region"
           required
@@ -27,9 +27,9 @@
 
         {% for Region in region_state_map.keys() %}
           <option value="{{ Region }}"
-            {% if draft and draft.Region == Region %}
+            {% if draft and draft.region == Region %}
               selected
-            {% elif not draft and user.Region == Region %}
+            {% elif not draft and user.region == Region %}
               selected
             {% endif %}>
             {{ Region }}
@@ -43,8 +43,8 @@
   <div class="column">
     <label class="label">State</label>
     <input type="hidden"
-           name="State"
-           value="{% if draft %}{{ draft.State }}{% else %}{{ user.State }}{% endif %}">
+           name="state"
+           value="{% if draft %}{{ draft.state }}{% else %}{{ user.state }}{% endif %}">
     <div class="control select is-fullwidth">
       <select id="State" required disabled>
         <option value="">Select State</option>

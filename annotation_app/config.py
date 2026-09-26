@@ -7,7 +7,56 @@ BASE_DIR = Path(__file__).resolve().parent
 DATA_FILE = BASE_DIR / "static" / "annotations.jsonl"
 
 REGION_STATE_MAP = {
-    "Chinese Cultural Zone": ["Region TBD"]
+	"North China": [
+        "Beijing",
+        "Tianjin",
+        "Hebei",
+        "Shanxi",
+        "Inner Mongolia"
+    ],
+
+    "Northeast China": [
+        "Liaoning",
+        "Jilin",
+        "Heilongjiang"
+    ],
+
+    "Northwestern China": [
+        "Shaanxi",
+        "Gansu",
+        "Qinghai",
+        "Ningxia",
+        "Xinjiang"
+    ],
+
+    "East China": [
+        "Shanghai",
+        "Jiangsu",
+        "Zhejiang",
+        "Anhui",
+        "Fujian",
+        "Taiwan",
+        "Jiangxi",
+        "Shandong"
+    ],
+
+    "South Central China": [
+        "Henan",
+        "Hubei",
+        "Hunan",
+        "Guangdong",
+        "Guangxi",
+        "Hainan"
+    ],
+
+    "Southwestern China": [
+        "Chongqing",
+        "Sichuan",
+        "Guizhou",
+        "Yunnan",
+        "Tibet"
+    ]
+    
 }
 
 # Update for pythonanywhere
@@ -85,7 +134,7 @@ HEGEMONY_AXES = [
 	"colorism"
 ]
 
-SHEET_NAME = "json-to-sheets-hegemony"
+SHEET_NAME = "chinese-cultural-hegemony-pilot-annotations"
 
 GOOGLE_CREDS_PATH = BASE_DIR / "accounts" / "google_creds.json"
 
