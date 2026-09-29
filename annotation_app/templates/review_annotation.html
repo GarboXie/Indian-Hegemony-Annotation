@@ -331,7 +331,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        {% for axis in ["social", "economic", "religious", "gender", "linguistic", "colorism"] %}
+                        {% for axis in ["social", "economic", "religious", "gender", "linguistic", "regional"] %}
                         <tr>
                           <td>{{ axis|capitalize }}</td>
                           <td>{{ record.outputs[model_key][kind].hegemony[axis].present }}</td>

@@ -131,7 +131,7 @@ HEGEMONY_AXES = [
 	"religious",	
 	"gender",
 	"linguistic",
-	"colorism"
+	"regional"
 ]
 
 SHEET_NAME = "chinese-cultural-hegemony-pilot-annotations"
@@ -169,8 +169,8 @@ HEADERS = [
 	"gemini_base_gender_impact",
 	"gemini_base_linguistic",
 	"gemini_base_linguistic_impact",
-	"gemini_base_colorism",
-	"gemini_base_colorism_impact",
+	"gemini_base_regional",
+	"gemini_base_regional_impact",
 
 	# === GEMINI IDENTITY ===
 	"gemini_identity_output",
@@ -185,8 +185,8 @@ HEADERS = [
 	"gemini_identity_gender_impact",
 	"gemini_identity_linguistic",
 	"gemini_identity_linguistic_impact",
-	"gemini_identity_colorism",
-	"gemini_identity_colorism_impact",
+	"gemini_identity_regional",
+	"gemini_identity_regional_impact",
 
 	# === GPT BASE ===
 	"gpt_base_output",
@@ -201,8 +201,8 @@ HEADERS = [
 	"gpt_base_gender_impact",
 	"gpt_base_linguistic",
 	"gpt_base_linguistic_impact",
-	"gpt_base_colorism",
-	"gpt_base_colorism_impact",
+	"gpt_base_regional",
+	"gpt_base_regional_impact",
 
 	# === GPT IDENTITY ===
 	"gpt_identity_output",
@@ -217,8 +217,8 @@ HEADERS = [
 	"gpt_identity_gender_impact",
 	"gpt_identity_linguistic",
 	"gpt_identity_linguistic_impact",
-	"gpt_identity_colorism",
-	"gpt_identity_colorism_impact",
+	"gpt_identity_regional",
+	"gpt_identity_regional_impact",
 
 	# === LLAMA i.e GPT-OSS-120B BASE ===
 	"llama_base_output",
@@ -233,8 +233,8 @@ HEADERS = [
 	"llama_base_gender_impact",
 	"llama_base_linguistic",
 	"llama_base_linguistic_impact",
-	"llama_base_colorism",
-	"llama_base_colorism_impact",
+	"llama_base_regional",
+	"llama_base_regional_impact",
 
 	# === LLAMA i.e GPT-OSS-120B IDENTITY ===
 	"llama_identity_output",
@@ -249,8 +249,8 @@ HEADERS = [
 	"llama_identity_gender_impact",
 	"llama_identity_linguistic",
 	"llama_identity_linguistic_impact",
-	"llama_identity_colorism",
-	"llama_identity_colorism_impact",
+	"llama_identity_regional",
+	"llama_identity_regional_impact",
 
 	# === DEEPSEEK BASE ===
 	"deepseek_base_output",
@@ -265,8 +265,8 @@ HEADERS = [
 	"deepseek_base_gender_impact",
 	"deepseek_base_linguistic",
 	"deepseek_base_linguistic_impact",
-	"deepseek_base_colorism",
-	"deepseek_base_colorism_impact",
+	"deepseek_base_regional",
+	"deepseek_base_regional_impact",
 
 	# === DEEPSEEK IDENTITY ===
 	"deepseek_identity_output",
@@ -281,8 +281,8 @@ HEADERS = [
 	"deepseek_identity_gender_impact",
 	"deepseek_identity_linguistic",
 	"deepseek_identity_linguistic_impact",
-	"deepseek_identity_colorism",
-	"deepseek_identity_colorism_impact",
+	"deepseek_identity_regional",
+	"deepseek_identity_regional_impact",
 
 	"ground_truth",
 
