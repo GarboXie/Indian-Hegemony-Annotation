@@ -132,6 +132,12 @@ def generate_llama_output(prompt: str) -> str:
             }
         ],
         temperature = 0.8,
-        max_tokens = 300
+        max_tokens = 800
     )
+    choice = completion.choices[0]
+
+    print("FINISH REASON:", choice.finish_reason)
+    print("OUTPUT LENGTH:", len(choice.message.content or ""))
+
+
     return completion.choices[0].message.content or ""
