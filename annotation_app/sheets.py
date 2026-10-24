@@ -58,6 +58,9 @@ def _ensure_sheet_headers(worksheet, headers):
     if existing_headers == headers:
         return
 
+    if existing_headers and not (headers == HEADERS and existing_headers == LEGACY_HEADERS):
+        raise ValueError("Unrecognized sheet headers; refusing to relabel existing data.")
+
     worksheet.resize(cols=max(worksheet.col_count, len(headers)))
     worksheet.update(
         f"A1:{gspread.utils.rowcol_to_a1(1, len(headers))}",
@@ -71,6 +74,12 @@ def _normalize_yes_no(value: str) -> str:
 
 
 def _row_map_to_record(row_map: dict) -> dict:
+    # Read both neutral sheet columns and records exported with legacy aliases.
+    row_map = dict(row_map)
+    for internal, column_key in MODEL_COLUMN_KEYS.items():
+        for key, value in list(row_map.items()):
+            if key.startswith(column_key + "_"):
+                row_map[internal + key[len(column_key):]] = value
     record = {
         "id": str(row_map.get("id", "")).strip(),
         "timestamp": row_map.get("timestamp", ""),

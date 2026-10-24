@@ -64,6 +64,25 @@ admin review and CSV export in the new portal.
 
 Peer-review assignment lists start empty until Singapore annotators are onboarded.
 
+## Model column names
+
+Singapore Sheets and CSV exports use neutral prefixes for blinded annotation:
+
+| Sheet prefix | Internal alias | Backend model |
+| --- | --- | --- |
+| model1 | gemini | qwen/qwen3.8-27b (Groq) |
+| model2 | gpt | openai/gpt-oss-120b (Groq) |
+| model3 | llama | meta-llama/llama-4-maverick (OpenRouter) |
+| model4 | deepseek | deepseek/deepseek-v3.2 (OpenRouter) |
+
+Legacy aliases remain in form fields, generation routes, saved drafts and JSON
+records. They do not identify the actual provider model. The change preserves
+all 124 column positions. The sheet helper accepts the exact previous Singapore
+header layout and relabels row 1 only; unexpected layouts are rejected. Readers
+accept both old and neutral prefixes. Update server code before relabeling Sheets,
+then reload the new app; never manually reorder columns. Run
+`python -B tests/test_sheet_columns.py` to check migration and reading compatibility.
+
 ## Free hosting choice (checked 2026-10-24)
 
 A separate PythonAnywhere free account is a candidate for this app: each free

@@ -47,8 +47,15 @@ for _name in (
     if os.environ.get("SINGAPORE_" + _name):
         KEYS[_name] = os.environ["SINGAPORE_" + _name]
 
-# llama is actually GPT-OSS
-HEADERS = [
+# Internal aliases stay stable for saved drafts and existing JSON records.
+MODEL_COLUMN_KEYS = {
+    "gemini": "model1",
+    "gpt": "model2",
+    "llama": "model3",
+    "deepseek": "model4",
+}
+
+LEGACY_HEADERS = [
 	# --- metadata ---
 	"id",
 	"timestamp",
@@ -195,4 +202,11 @@ HEADERS = [
 	"expert_reviews",
 	"isAccept",
 	"annotator_addressed",
+]
+
+# Keep column positions unchanged so the header migration preserves every row.
+HEADERS = [
+    MODEL_COLUMN_KEYS.get(header.split("_", 1)[0], header.split("_", 1)[0])
+    + ("_" + header.split("_", 1)[1] if "_" in header else "")
+    for header in LEGACY_HEADERS
 ]
