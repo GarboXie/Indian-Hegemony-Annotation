@@ -193,8 +193,6 @@ def json_to_row(record):
         record["id"],
         record["timestamp"],
         record["annotator_name"],
-        record["region"],
-        record["state"],
     ])
 
     # --- prompts ---

@@ -1,15 +1,13 @@
-"""Check real sheet helpers without importing credentials or calling Google."""
+"""Test actual serialization and migration code without credentials or network."""
 import ast
-import sys
 import unittest
 from pathlib import Path
-from types import SimpleNamespace
 
-ROOT = Path(__file__).resolve().parents[1] / "annotation_app"
+ROOT = Path(__file__).resolve().parents[1] / 'annotation_app'
 
 
 def definitions(filename, names, scope):
-    tree = ast.parse((ROOT / filename).read_text(encoding="utf-8"))
+    tree = ast.parse((ROOT / filename).read_text(encoding='utf-8'))
     nodes = [n for n in tree.body if (
         isinstance(n, ast.FunctionDef) and n.name in names
         or isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id in names for t in n.targets)
@@ -19,22 +17,19 @@ def definitions(filename, names, scope):
 
 class SheetColumns(unittest.TestCase):
     def setUp(self):
-        self.scope = {}
-        definitions('config.py', {'HEGEMONY_AXES', 'MODEL_COLUMN_KEYS', 'LEGACY_HEADERS', 'HEADERS'}, self.scope)
-        self.scope['gspread'] = SimpleNamespace(utils=SimpleNamespace(rowcol_to_a1=lambda r, c: 'DT1'))
-        definitions('sheets.py', {'_normalize_yes_no', '_row_map_to_record', '_ensure_sheet_headers'}, self.scope)
+        self.s = {}
+        definitions('config.py', {'HEGEMONY_AXES', 'MODEL_COLUMN_KEYS', 'NEUTRAL_MODEL_COLUMN_KEYS',
+                                'LEGACY_HEADERS', 'NEUTRAL_HEADERS', 'HEADERS'}, self.s)
+        definitions('sheets.py', {'LEGACY_REVIEW_HEADERS', 'REVIEW_HEADERS', '_normalize_yes_no',
+                                '_row_map_to_record', '_ensure_sheet_headers'}, self.s)
+        definitions('storage.py', {'json_to_row'}, self.s)
+        definitions('scripts/migrate_singapore_sheet.py', {'migration_requests'}, self.s)
 
-    def test_roundtrip_and_aliases(self):
-        s = self.scope
-        self.assertEqual(len(s['HEADERS']), 124)
-        self.assertEqual(len(set(s['HEADERS'])), 124)
-        for old, new in zip(s['LEGACY_HEADERS'], s['HEADERS']):
-            expected = old
-            for internal, neutral in s['MODEL_COLUMN_KEYS'].items():
-                if old.startswith(internal + '_'):
-                    expected = neutral + old[len(internal):]
-            self.assertEqual(new, expected)
-        old_row = {'id': 'test', 'state': 'Singapore'}
+    def record(self):
+        s = self.s
+        old_row = {'id': 'test', 'timestamp': 'test-time', 'annotator_name': 'tester',
+                   'region': 'Singapore', 'state': 'Singapore',
+                   'base_prompt': 'Base', 'identity_prompt': 'Identity'}
         for model in s['MODEL_COLUMN_KEYS']:
             for kind in ['base', 'identity']:
                 prefix = f'{model}_{kind}'
@@ -43,35 +38,56 @@ class SheetColumns(unittest.TestCase):
                 for axis in s['HEGEMONY_AXES']:
                     old_row[prefix + '_' + axis] = 'yes'
                     old_row[prefix + '_' + axis + '_impact'] = prefix + axis
-        new_row = dict(zip(s['HEADERS'], [old_row.get(h, '') for h in s['LEGACY_HEADERS']]))
-        old_record = s['_row_map_to_record'](old_row)
-        new_record = s['_row_map_to_record'](new_row)
-        self.assertEqual(new_record['outputs'], old_record['outputs'])
-        for model in s['MODEL_COLUMN_KEYS']:
-            for kind in ['base', 'identity']:
-                self.assertEqual(new_record['outputs'][model][kind]['text'], f'{model}_{kind} response')
+        for h in ['ground_truth', 'references', 'expert_reviews', 'isAccept', 'annotator_addressed']:
+            old_row[h] = h + ' value'
+        return old_row, s['_row_map_to_record'](old_row)
 
-    def test_migration_changes_only_header(self):
-        s = self.scope
+    def test_three_schema_roundtrips(self):
+        s = self.s
+        old_row, expected = self.record()
+        serialized = s['json_to_row'](expected)
+        self.assertEqual(len(serialized), 122)
+        self.assertEqual(len(set(s['HEADERS'])), 122)
+        self.assertEqual(s['HEADERS'][3:5], ['base_prompt', 'identity_prompt'])
+        for prefix in ['qwen_3_8_27b', 'gpt_oss_120b', 'llama_4_maverick', 'deepseek_v3_2']:
+            self.assertIn(prefix + '_base_output', s['HEADERS'])
+            self.assertIn(prefix + '_identity_ethnic_impact', s['HEADERS'])
+        for headers in [s['HEADERS'], s['REVIEW_HEADERS']]:
+            self.assertNotIn('region', headers)
+            self.assertNotIn('state', headers)
+        new_row = dict(zip(s['HEADERS'], serialized))
+        neutral_row = dict(zip(s['NEUTRAL_HEADERS'], [old_row.get(h, '') for h in s['LEGACY_HEADERS']]))
+        for row in [old_row, neutral_row, new_row]:
+            self.assertEqual(s['_row_map_to_record'](row), expected)
 
+    def test_atomic_requests_preserve_cells(self):
+        s = self.s
+        for old, new in [(s['LEGACY_HEADERS'], s['HEADERS']),
+                         (s['NEUTRAL_HEADERS'], s['HEADERS']),
+                         (s['LEGACY_REVIEW_HEADERS'], s['REVIEW_HEADERS'])]:
+            data = [f'value-{i}' for i in range(len(old))]
+            rows = [list(old), list(data), ['short'] + [''] * (len(old) - 1)]
+            for request in s['migration_requests'](123, old, new):
+                if 'deleteDimension' in request:
+                    dimension = request['deleteDimension']['range']
+                    self.assertEqual(dimension['sheetId'], 123)
+                    for row in rows:
+                        del row[dimension['startIndex']:dimension['endIndex']]
+                else:
+                    update = request['updateCells']
+                    self.assertEqual(update['fields'], 'userEnteredValue')
+                    self.assertEqual(update['start']['rowIndex'], 0)
+                    rows[0] = [cell['userEnteredValue']['stringValue'] for cell in update['rows'][0]['values']]
+            self.assertEqual(rows[0], new)
+            self.assertEqual(rows[1], [v for h, v in zip(old, data) if h not in {'state', 'region'}])
+            self.assertEqual(rows[2], ['short'] + [''] * (len(new) - 1))
+
+    def test_old_headers_require_explicit_migration(self):
+        s = self.s
         class Sheet:
-            col_count = 124
-            rows = [list(s['LEGACY_HEADERS']), ['existing-data'] * 124]
-
-            def row_values(self, row): return self.rows[row - 1]
-            def resize(self, **kwargs): pass
-            def update(self, cell_range, values, **kwargs):
-                assert cell_range == 'A1:DT1'
-                self.rows[0] = values[0]
-
-        sheet = Sheet()
-        original = list(sheet.rows[1])
-        s['_ensure_sheet_headers'](sheet, s['HEADERS'])
-        self.assertEqual(sheet.rows[0], s['HEADERS'])
-        self.assertEqual(sheet.rows[1], original)
-        sheet.rows[0] = ['unexpected', 'schema']
+            def row_values(self, _): return s['NEUTRAL_HEADERS']
         with self.assertRaises(ValueError):
-            s['_ensure_sheet_headers'](sheet, s['HEADERS'])
+            s['_ensure_sheet_headers'](Sheet(), s['HEADERS'])
 
 
 if __name__ == '__main__':

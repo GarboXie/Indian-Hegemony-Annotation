@@ -20,7 +20,7 @@ REVIEW_SHEET = "testreview"
 
 #---- for change on pythonanywhere
 
-REVIEW_HEADERS = [
+LEGACY_REVIEW_HEADERS = [
     "review_id",
     "annotation_id",
     "reviewer_username",
@@ -39,6 +39,7 @@ REVIEW_HEADERS = [
     "needs_adjudication",
     "timestamp",
 ]
+REVIEW_HEADERS = [h for h in LEGACY_REVIEW_HEADERS if h not in {"region", "state"}]
 
 _client = gspread.authorize(_creds)
 if not SHEET_ID:
@@ -58,8 +59,8 @@ def _ensure_sheet_headers(worksheet, headers):
     if existing_headers == headers:
         return
 
-    if existing_headers and not (headers == HEADERS and existing_headers == LEGACY_HEADERS):
-        raise ValueError("Unrecognized sheet headers; refusing to relabel existing data.")
+    if existing_headers:
+        raise ValueError("Sheet schema differs. Run scripts/migrate_singapore_sheet.py before using the updated portal.")
 
     worksheet.resize(cols=max(worksheet.col_count, len(headers)))
     worksheet.update(
@@ -74,18 +75,19 @@ def _normalize_yes_no(value: str) -> str:
 
 
 def _row_map_to_record(row_map: dict) -> dict:
-    # Read both neutral sheet columns and records exported with legacy aliases.
+    # Preserve internal form/draft aliases while accepting all exported schemas.
     row_map = dict(row_map)
-    for internal, column_key in MODEL_COLUMN_KEYS.items():
-        for key, value in list(row_map.items()):
-            if key.startswith(column_key + "_"):
-                row_map[internal + key[len(column_key):]] = value
+    for mapping in (NEUTRAL_MODEL_COLUMN_KEYS, MODEL_COLUMN_KEYS):
+        for internal, column_key in mapping.items():
+            for key, value in list(row_map.items()):
+                if key.startswith(column_key + "_"):
+                    row_map[internal + key[len(column_key):]] = value
     record = {
         "id": str(row_map.get("id", "")).strip(),
         "timestamp": row_map.get("timestamp", ""),
         "annotator_name": row_map.get("annotator_name", ""),
-        "region": row_map.get("region", ""),
-        "state": row_map.get("state", ""),
+        "region": "Singapore",
+        "state": "Singapore",
         "prompts": {
             "base": row_map.get("base_prompt", ""),
             "identity": row_map.get("identity_prompt", ""),
@@ -165,10 +167,7 @@ def _get_or_create_review_worksheet():
         worksheet.update("A1", [REVIEW_HEADERS], value_input_option="RAW")
         return worksheet
 
-    header_values = worksheet.row_values(1)
-    if header_values != REVIEW_HEADERS:
-        worksheet.resize(cols=max(worksheet.col_count, len(REVIEW_HEADERS)))
-        worksheet.update("A1", [REVIEW_HEADERS], value_input_option="RAW")
+    _ensure_sheet_headers(worksheet, REVIEW_HEADERS)
 
     return worksheet
 

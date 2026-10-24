@@ -66,22 +66,48 @@ Peer-review assignment lists start empty until Singapore annotators are onboarde
 
 ## Model column names
 
-Singapore Sheets and CSV exports use neutral prefixes for blinded annotation:
+Singapore Sheets and CSV exports use actual model-name prefixes. The annotation
+webpage retains its blinded Model 1–4 display.
 
 | Sheet prefix | Internal alias | Backend model |
 | --- | --- | --- |
-| model1 | gemini | qwen/qwen3.8-27b (Groq) |
-| model2 | gpt | openai/gpt-oss-120b (Groq) |
-| model3 | llama | meta-llama/llama-4-maverick (OpenRouter) |
-| model4 | deepseek | deepseek/deepseek-v3.2 (OpenRouter) |
+| qwen_3_8_27b | gemini | qwen/qwen3.8-27b (Groq) |
+| gpt_oss_120b | gpt | openai/gpt-oss-120b (Groq) |
+| llama_4_maverick | llama | meta-llama/llama-4-maverick (OpenRouter) |
+| deepseek_v3_2 | deepseek | deepseek/deepseek-v3.2 (OpenRouter) |
 
 Legacy aliases remain in form fields, generation routes, saved drafts and JSON
-records. They do not identify the actual provider model. The change preserves
-all 124 column positions. The sheet helper accepts the exact previous Singapore
-header layout and relabels row 1 only; unexpected layouts are rejected. Readers
-accept both old and neutral prefixes. Update server code before relabeling Sheets,
-then reload the new app; never manually reorder columns. Run
+records. They do not identify the actual provider model. Sheets and CSV exports
+omit region and state: testing/testing2 now have 122 columns, testreview has 15.
+Internally Singapore is a fixed study location so existing draft and review logic
+remains compatible. Readers accept legacy, neutral and actual model prefixes.
+Old worksheet schemas require explicit migration; the app refuses to overwrite
+their headers. Run
 `python -B tests/test_sheet_columns.py` to check migration and reading compatibility.
+
+### Migrate existing worksheets
+
+Pause annotation activity for the update. Download the new branch code in the
+Singapore checkout, then in its virtual environment set SINGAPORE_SHEET_ID and run:
+
+```bash
+python annotation_app/scripts/migrate_singapore_sheet.py
+```
+
+This first command is read only and validates all three schemas. Then apply:
+
+```bash
+python annotation_app/scripts/migrate_singapore_sheet.py --apply
+```
+
+The migration saves a private snapshot under data/singapore/migration_backups/,
+deletes region/state columns and renames model headers in one atomic Sheets batch,
+and reads back all sheets to verify headers and every retained cell. Both previous
+124-column annotation schemas are accepted. Already migrated sheets are skipped.
+Reload the Singapore Web app immediately afterward before resuming annotation.
+Do not reload the old app against the new schema, manually rename headers, reorder
+columns or delete data rows. If verification fails, retain the snapshot and stop
+annotation activity for investigation; do not re-run old code against the new sheet.
 
 ## Free hosting choice (checked 2026-10-24)
 

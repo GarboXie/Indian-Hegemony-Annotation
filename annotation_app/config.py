@@ -49,6 +49,13 @@ for _name in (
 
 # Internal aliases stay stable for saved drafts and existing JSON records.
 MODEL_COLUMN_KEYS = {
+    "gemini": "qwen_3_8_27b",
+    "gpt": "gpt_oss_120b",
+    "llama": "llama_4_maverick",
+    "deepseek": "deepseek_v3_2",
+}
+
+NEUTRAL_MODEL_COLUMN_KEYS = {
     "gemini": "model1",
     "gpt": "model2",
     "llama": "model3",
@@ -204,9 +211,16 @@ LEGACY_HEADERS = [
 	"annotator_addressed",
 ]
 
-# Keep column positions unchanged so the header migration preserves every row.
+# Previous public schema, retained for explicit migration and compatibility.
+NEUTRAL_HEADERS = [
+    NEUTRAL_MODEL_COLUMN_KEYS.get(header.split("_", 1)[0], header.split("_", 1)[0])
+    + ("_" + header.split("_", 1)[1] if "_" in header else "")
+    for header in LEGACY_HEADERS
+]
+
 HEADERS = [
     MODEL_COLUMN_KEYS.get(header.split("_", 1)[0], header.split("_", 1)[0])
     + ("_" + header.split("_", 1)[1] if "_" in header else "")
     for header in LEGACY_HEADERS
+    if header not in {"region", "state"}
 ]

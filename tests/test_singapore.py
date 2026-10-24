@@ -80,6 +80,9 @@ class SingaporeFlow(unittest.TestCase):
             self.assertEqual(exported.status_code, 200)
             self.assertIn('religious', exported.get_data(as_text=True))
             self.assertIn('ethnic', exported.get_data(as_text=True))
+            self.assertIn('qwen_3_8_27b_base_output', exported.get_data(as_text=True))
+            self.assertNotIn('region', exported.get_data(as_text=True).splitlines()[0].split(','))
+            self.assertNotIn('state', exported.get_data(as_text=True).splitlines()[0].split(','))
 
 
 if __name__ == '__main__':
