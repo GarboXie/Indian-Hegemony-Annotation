@@ -71,10 +71,10 @@ webpage retains its blinded Model 1–4 display.
 
 | Sheet prefix | Internal alias | Backend model |
 | --- | --- | --- |
-| qwen_3_8_27b | gemini | qwen/qwen3.8-27b (Groq) |
-| gpt_oss_120b | gpt | openai/gpt-oss-120b (Groq) |
-| llama_4_maverick | llama | meta-llama/llama-4-maverick (OpenRouter) |
-| deepseek_v3_2 | deepseek | deepseek/deepseek-v3.2 (OpenRouter) |
+| qwen | gemini | qwen/qwen3.8-27b (Groq) |
+| gpt_oss | gpt | openai/gpt-oss-120b (Groq) |
+| llama | llama | meta-llama/llama-4-maverick (OpenRouter) |
+| deepseek | deepseek | deepseek/deepseek-v3.2 (OpenRouter) |
 
 Legacy aliases remain in form fields, generation routes, saved drafts and JSON
 records. They do not identify the actual provider model. Sheets and CSV exports

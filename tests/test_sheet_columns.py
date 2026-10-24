@@ -49,7 +49,7 @@ class SheetColumns(unittest.TestCase):
         self.assertEqual(len(serialized), 122)
         self.assertEqual(len(set(s['HEADERS'])), 122)
         self.assertEqual(s['HEADERS'][3:5], ['base_prompt', 'identity_prompt'])
-        for prefix in ['qwen_3_8_27b', 'gpt_oss_120b', 'llama_4_maverick', 'deepseek_v3_2']:
+        for prefix in ['qwen', 'gpt_oss', 'llama', 'deepseek']:
             self.assertIn(prefix + '_base_output', s['HEADERS'])
             self.assertIn(prefix + '_identity_ethnic_impact', s['HEADERS'])
         for headers in [s['HEADERS'], s['REVIEW_HEADERS']]:

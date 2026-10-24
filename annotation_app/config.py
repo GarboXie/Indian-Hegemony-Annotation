@@ -49,10 +49,10 @@ for _name in (
 
 # Internal aliases stay stable for saved drafts and existing JSON records.
 MODEL_COLUMN_KEYS = {
-    "gemini": "qwen_3_8_27b",
-    "gpt": "gpt_oss_120b",
-    "llama": "llama_4_maverick",
-    "deepseek": "deepseek_v3_2",
+    "gemini": "qwen",
+    "gpt": "gpt_oss",
+    "llama": "llama",
+    "deepseek": "deepseek",
 }
 
 NEUTRAL_MODEL_COLUMN_KEYS = {
