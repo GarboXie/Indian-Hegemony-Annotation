@@ -41,7 +41,16 @@ REVIEW_HEADERS = [
 ]
 
 _client = gspread.authorize(_creds)
-_worksheet = _client.open(SHEET_NAME).worksheet(MAIN_SHEET)
+if not SHEET_ID:
+    raise RuntimeError("Set SINGAPORE_SHEET_ID to a new, dedicated Singapore spreadsheet ID.")
+
+def _open_study_sheet():
+    spreadsheet = _client.open_by_key(SHEET_ID)
+    if spreadsheet.title != SHEET_NAME:
+        raise RuntimeError("Singapore spreadsheet title does not match the dedicated study name.")
+    return spreadsheet
+
+_worksheet = _open_study_sheet().worksheet(MAIN_SHEET)
 
 
 def _ensure_sheet_headers(worksheet, headers):
@@ -134,7 +143,7 @@ def load_records_from_sheet() -> list:
 
 
 def _get_or_create_review_worksheet():
-    spreadsheet = _client.open(SHEET_NAME)
+    spreadsheet = _open_study_sheet()
 
     try:
         worksheet = spreadsheet.worksheet(REVIEW_SHEET)
@@ -290,7 +299,7 @@ def append_row(row: list):
     # 3. Append to backup sheet
     # ---------------------------
     try:
-        backup_ws = _client.open(SHEET_NAME).worksheet(BACKUP_SHEET)
+        backup_ws = _open_study_sheet().worksheet(BACKUP_SHEET)
         _ensure_sheet_headers(backup_ws, HEADERS)
         backup_ws.append_row(row, value_input_option="RAW")
         backup_ok = True
@@ -367,7 +376,7 @@ def update_row_by_id(record_id: str, row: list):
 
     # -------- BACKUP --------
     try:
-        backup_ws = _client.open(SHEET_NAME).worksheet(BACKUP_SHEET)
+        backup_ws = _open_study_sheet().worksheet(BACKUP_SHEET)
         _ensure_sheet_headers(backup_ws, HEADERS)
         backup_cell = backup_ws.find(record_id)
 

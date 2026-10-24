@@ -1,10 +1,11 @@
+from contextlib import closing
 import sqlite3
 from pathlib import Path
 
-from config import BASE_DIR
+from config import DATA_DIR
 
 
-IAA_DB_PATH = Path(BASE_DIR) / "data" / "iaa_reviews.db"
+IAA_DB_PATH = DATA_DIR / "iaa_reviews.db"
 # for pythonanywhere
 MODEL_OUTPUT_TARGETS = [
     "model1_base",
@@ -130,12 +131,12 @@ def _ensure_schema(conn):
 
 
 def initialize_iaa_storage():
-    with _connect():
+    with closing(_connect()):
         return str(IAA_DB_PATH)
 
 
 def fetch_iaa_review(annotation_id, reviewer_name):
-    with _connect() as conn:
+    with closing(_connect()) as conn:
         row = conn.execute(
             """
             SELECT *
@@ -149,7 +150,7 @@ def fetch_iaa_review(annotation_id, reviewer_name):
 
 
 def list_completed_iaa_annotation_ids_for_reviewer(reviewer_name):
-    with _connect() as conn:
+    with closing(_connect()) as conn:
         rows = conn.execute(
             """
             SELECT annotation_id
@@ -166,7 +167,7 @@ def list_completed_iaa_annotation_ids_for_reviewer(reviewer_name):
 
 
 def count_completed_iaa_reviews_by_annotation():
-    with _connect() as conn:
+    with closing(_connect()) as conn:
         rows = conn.execute(
             """
             SELECT annotation_id, COUNT(*) AS review_count
@@ -183,7 +184,7 @@ def count_completed_iaa_reviews_by_annotation():
 
 
 def list_completed_iaa_review_counts_by_state_and_reviewer():
-    with _connect() as conn:
+    with closing(_connect()) as conn:
         rows = conn.execute(
             """
             SELECT
@@ -207,7 +208,7 @@ def save_iaa_review(payload):
     if not annotation_id or not reviewer_name:
         raise ValueError("annotation_id and reviewer_name are required.")
 
-    with _connect() as conn:
+    with closing(_connect()) as conn:
         existing = conn.execute(
             """
             SELECT review_id, completed, editable
@@ -248,7 +249,7 @@ def save_iaa_review(payload):
 
 
 def list_iaa_reviews_for_export():
-    with _connect() as conn:
+    with closing(_connect()) as conn:
         rows = conn.execute(
             f"""
             SELECT review_id, {", ".join(IAA_REVIEW_COLUMNS)}

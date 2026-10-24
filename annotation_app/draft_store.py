@@ -1,7 +1,7 @@
 import json, os, uuid
-from config import BASE_DIR
+from config import DATA_DIR
 
-DRAFT_DIR = os.path.join(BASE_DIR, "data", "drafts")
+DRAFT_DIR = os.path.join(DATA_DIR, "drafts")
 
 os.makedirs(DRAFT_DIR, exist_ok=True)
 

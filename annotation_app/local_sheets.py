@@ -1,12 +1,12 @@
 """
 Local development replacement for Google Sheets.
-Annotations are still stored in a static/annotations.jsonl.
-No data is sent to Googlr Sheets in local mode.
+Annotations are stored in the isolated Singapore data directory.
+No data is sent to Google Sheets in local mode.
 """
 
 from storage import load_records
 
-def load_records_from_sheets():
+def load_records_from_sheet():
     return load_records()
 
 def append_row(row):

@@ -1,10 +1,15 @@
 from werkzeug.security import generate_password_hash
 import json
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 
-DATA_FILE = BASE_DIR / "static" / "annotations.jsonl"
+# This branch always uses its own namespace, including with a shared data root.
+DATA_DIR = Path(os.environ.get("SINGAPORE_DATA_ROOT", str(BASE_DIR / "data"))).resolve() / "singapore"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+DATA_FILE = DATA_DIR / "annotations.jsonl"
+ANNOTATORS_FILE = DATA_DIR / "annotators.json"
 
 REGION_STATE_MAP = {"Singapore": ["Singapore"]}
 
@@ -24,13 +29,23 @@ HEGEMONY_AXES = [
 ]
 
 SHEET_NAME = "singapore-cultural-hegemony-annotations"
+SHEET_ID = os.environ.get("SINGAPORE_SHEET_ID", "").strip()
 
-GOOGLE_CREDS_PATH = BASE_DIR / "accounts" / "google_creds.json"
+GOOGLE_CREDS_PATH = Path(os.environ.get("SINGAPORE_GOOGLE_CREDS_PATH", str(BASE_DIR / "accounts" / "singapore" / "google_creds.json")))
 
-API_KEYS_PATH = BASE_DIR / "accounts" / "apikeys.json"
+API_KEYS_PATH = BASE_DIR / "accounts" / "singapore" / "apikeys.json"
 
-with open(API_KEYS_PATH, "r") as f:
-	KEYS = json.load(f)
+KEYS = {}
+if API_KEYS_PATH.exists():
+    with API_KEYS_PATH.open(encoding="utf-8") as f:
+        KEYS = json.load(f)
+for _name in (
+    "FLASK_SECRET_KEY", "ANNOTATOR_PASSWORD_HASH", "ADMIN_USERNAME", "ADMIN_PASSWORD_HASH",
+    "GROQ_QWEN_API_KEY", "GROQ_GPT_OSS_API_KEY", "OPENROUTER_LLAMA_API_KEY",
+    "OPENROUTER_DEEPSEEK_API_KEY", "OPENAI_API_KEY",
+):
+    if os.environ.get("SINGAPORE_" + _name):
+        KEYS[_name] = os.environ["SINGAPORE_" + _name]
 
 # llama is actually GPT-OSS
 HEADERS = [

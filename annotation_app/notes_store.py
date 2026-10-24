@@ -1,11 +1,12 @@
+from contextlib import closing
 import os
 import re
 import sqlite3
+from config import DATA_DIR
 from datetime import datetime
 
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-NOTES_DIR = os.path.join(BASE_DIR, "data", "drafts")
+NOTES_DIR = os.path.join(DATA_DIR, "notes")
 
 
 def _safe_username(username):
@@ -52,7 +53,7 @@ def _human_readable_date(iso_value):
 
 
 def list_notes(username, limit=200):
-    with _connect_for_user(username) as conn:
+    with closing(_connect_for_user(username)) as conn:
         rows = conn.execute(
             """
             SELECT id, prompt, state, created_at
@@ -76,7 +77,7 @@ def save_note(username, prompt, state=""):
         raise ValueError("Prompt cannot be empty.")
 
     created_at = datetime.utcnow().isoformat()
-    with _connect_for_user(username) as conn:
+    with closing(_connect_for_user(username)) as conn:
         conn.execute(
             "INSERT INTO notes (prompt, state, created_at) VALUES (?, ?, ?)",
             (clean_prompt, str(state or "").strip(), created_at),
@@ -90,7 +91,7 @@ def delete_note(username, note_id):
     except (TypeError, ValueError):
         return False
 
-    with _connect_for_user(username) as conn:
+    with closing(_connect_for_user(username)) as conn:
         cursor = conn.execute("DELETE FROM notes WHERE id = ?", (parsed_note_id,))
         conn.commit()
         return cursor.rowcount > 0

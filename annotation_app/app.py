@@ -47,20 +47,13 @@ from urllib.parse import urlencode
 
 app = Flask(__name__)
 app.secret_key = KEYS["FLASK_SECRET_KEY"]
+app.config["SESSION_COOKIE_NAME"] = "singapore_portal_session"
 app.register_blueprint(auth_bp)
 initialize_iaa_storage()
 
 # If set, /examples will show only these annotation IDs (in this exact order).
 # Leave empty to use automatic latest-complete sampling.
-EXAMPLE_ANNOTATION_IDS = [
-    "582abe5e-c80a-4306-9086-00ebf7b660d4",
-    "69782176-23f7-488d-a10a-670f30f26622",
-    "0a277487-7037-49f9-96b4-ffc7ae804f32",
-    "d1cddafd-aed5-4a8f-981c-37264dbd0bca",
-    "4d17f079-083a-40a6-bdee-010af3943430",
-    "5a83933e-74fb-422b-ab62-ec1c4e0bb8c0",
-    "51147a23-93a1-4f92-9629-6e7e91ed497e",
-]
+EXAMPLE_ANNOTATION_IDS = []
 
 IAR_GUIDELINES_FILENAME = "Inter-Annotator-Review-Guidelines.pdf"
 IAR_ASSIGNMENTS_FILENAME = "inter_annotator_review_assignments.json"
@@ -82,88 +75,11 @@ ONBOARDED_ANNOTATOR_STATE_MAP = {
     if _normalize_username(username)
 }
 
-TEMP_INTER_ANNOTATOR_REVIEW_ACCESS = {
-    _normalize_username("ojastest"): "Uttar Pradesh",
-}
+TEMP_INTER_ANNOTATOR_REVIEW_ACCESS = {}
 
-TEMP_INTER_ANNOTATOR_REVIEW_USER_ALIAS = {
-    _normalize_username("ojastest"): _normalize_username("neerav"),
-}
+TEMP_INTER_ANNOTATOR_REVIEW_USER_ALIAS = {}
 
-STATE_REVIEW_ASSIGNMENT_CONFIGS = {
-    "uttar pradesh": {
-        "seed": "iaa-up-v1",
-        "annotators": [
-            "neerav",
-            "Manshi Patel",
-        ],
-        "per_annotator_quota": {
-            "neerav": 15,
-            "Manshi Patel": 15,
-        },
-    },
-    "jammu and kashmir": {
-        "seed": "iaa-jk-v1",
-        "annotators": [
-            "Ashish",
-            "Sohail Khan",
-        ],
-        "per_annotator_quota": {
-            "Ashish": 15,
-            "Sohail Khan": 15,
-        },
-    },
-    "bihar": {
-        "seed": "iaa-bihar-v1",
-        "annotators": [
-            "tauseef",
-            "kameshwari04",
-        ],
-        "per_annotator_quota": {
-            "tauseef": 15,
-            "kameshwari04": 15,
-        },
-    },
-    "west bengal": {
-        "seed": "iaa-wb-v1",
-        "annotators": [
-            "Arnab6203",
-            "Subham48",
-            "Lila Ghimire",
-        ],
-        "per_annotator_quota": {
-            "Arnab6203": 10,
-            "Subham48": 10,
-            "Lila Ghimire": 10,
-        },
-    },
-    "haryana": {
-        "seed": "iaa-haryana-v1",
-        "annotators": [
-            "nishtharajput",
-            "Ajit Rana",
-            "Priyanka",
-        ],
-        "per_annotator_quota": {
-            "nishtharajput": 10,
-            "Ajit Rana": 10,
-            "Priyanka": 10,
-        },
-    },
-    "maharashtra": {
-        "seed": "iaa-maharashtra-v1",
-        "annotators": [
-            "Manasikelkar26",
-            "Riddhi157",
-            "Aishwarya Gadgil",
-        ],
-        "per_annotator_quota": {
-            "Manasikelkar26": 10,
-            "Riddhi157": 10,
-            "Aishwarya Gadgil": 10,
-        },
-    },
-}
+STATE_REVIEW_ASSIGNMENT_CONFIGS = {}
 
 @app.before_request
 def validate_session():
@@ -233,7 +149,7 @@ def _get_state_review_assignment_config(state_name):
 
 
 def _iar_assignments_file_path():
-    return BASE_DIR / IAR_ASSIGNMENTS_FILENAME
+    return DATA_DIR / IAR_ASSIGNMENTS_FILENAME
 
 
 def _load_persisted_iar_assignments():

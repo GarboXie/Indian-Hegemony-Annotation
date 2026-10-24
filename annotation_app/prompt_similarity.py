@@ -6,7 +6,7 @@ from json import JSONDecodeError
 
 import requests
 
-from config import KEYS
+from config import KEYS, DATA_DIR
 
 OPENROUTER_EMBEDDING_URL = "https://openrouter.ai/api/v1/embeddings"
 OPENROUTER_EMBEDDING_MODEL = "sentence-transformers/all-minilm-l6-v2"
@@ -15,7 +15,7 @@ PROMPT_SIM_THRESHOLD = 0.65
 PROMPT_SIM_NEAR_DUP_THRESHOLD = 0.9
 PROMPT_SIM_MIN_CHARS = 40
 PROMPT_SIM_TOP_K = 5
-PROMPT_EMBEDDING_INDEX_PATH = "annotation_app/data/prompt_embeddings.json"
+PROMPT_EMBEDDING_INDEX_PATH = str(DATA_DIR / "prompt_embeddings.json")
 
 
 def _ensure_index_dir():

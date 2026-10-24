@@ -6,3 +6,7 @@ annotation_app/__pycache__/*.pyc
 annotation_app/data/
 .DS_Store
 annotators.json
+.venv/
+annotation_app/accounts/singapore/
+.env
+__pycache__/

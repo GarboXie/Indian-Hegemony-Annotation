@@ -3,11 +3,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
 import json
 import os
-from config import KEYS, REGION_STATE_MAP
+from config import KEYS, REGION_STATE_MAP, ANNOTATORS_FILE
 
 auth_bp = Blueprint("auth", __name__)
 
-ANNOTATORS_FILE = "annotators.json"
 
 
 # =========================
