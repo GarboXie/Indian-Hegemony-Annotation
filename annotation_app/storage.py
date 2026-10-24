@@ -85,6 +85,31 @@ def build_record(form):
     return {
             "id": str(uuid.uuid4()),
             "timestamp": datetime.utcnow().isoformat(),
+            "model_config_version": "mainland_v2_2026_10",
+            
+"model_mapping": {
+    "gemini": {
+        "display": "Model 1",
+        "model": "qwen/qwen3.8-27b",
+        "provider": "groq"
+    },
+    "gpt": {
+        "display": "Model 2",
+        "model": "openai/gpt-oss-120b",
+        "provider": "groq"
+    },
+    "llama": {
+        "display": "Model 3",
+        "model": "meta-llama/llama-4-maverick",
+        "provider": "openrouter"
+    },
+    "deepseek": {
+        "display": "Model 4",
+        "model": "deepseek/deepseek-v3.2",
+        "provider": "openrouter"
+    }
+},
+
 
             "annotator_name": form["annotator_name"],
             "region": form["region"],

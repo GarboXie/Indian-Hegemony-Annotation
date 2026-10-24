@@ -1697,36 +1697,38 @@ def admin_delete():
     return redirect(url_for("admin"))
 
 
+
 @app.route("/generate/gemini", methods=["POST"])
 @login_required
-def generate_gemini():
-    print("😋 GEMINI called")
-    data = request.json
+def generate_qwen():
+    print("QWEN called")
+    data = request.get_json(silent=True) or {}
     prompt = data.get("prompt", "").strip()
 
     if not prompt:
         return jsonify({"error": "Empty prompt"}), 400
 
-    return jsonify({"text": generate_gemini_output(prompt)})
+    return jsonify({"text": generate_qwen_output(prompt)})
 
 
 @app.route("/generate/gpt", methods=["POST"])
 @login_required
-def generate_gpt():
-    print("😋 Chat  GPT called")
-    data = request.json
+def generate_gpt_oss():
+    print("GPT-OSS called")
+    data = request.get_json(silent=True) or {}
     prompt = data.get("prompt", "").strip()
 
     if not prompt:
         return jsonify({"error": "Empty prompt"}), 400
 
-    return jsonify({"text": generate_gpt_output(prompt)})
+    return jsonify({"text": generate_gpt_oss_output(prompt)})
 
-@app.route("/generate/llama", methods=["POST"]) # actually gpt oss 120b
+
+@app.route("/generate/llama", methods=["POST"])
 @login_required
 def generate_llama():
-    print("😋 GPT-OSS called")
-    data = request.json
+    print("LLAMA 4 MAVERICK called")
+    data = request.get_json(silent=True) or {}
     prompt = data.get("prompt", "").strip()
 
     if not prompt:
@@ -1734,17 +1736,20 @@ def generate_llama():
 
     return jsonify({"text": generate_llama_output(prompt)})
 
+
 @app.route("/generate/deepseek", methods=["POST"])
 @login_required
 def generate_deepseek():
-    print("😋 Deepseek called")
-    data = request.json
+    print("DEEPSEEK V3.2 called")
+    data = request.get_json(silent=True) or {}
     prompt = data.get("prompt", "").strip()
 
     if not prompt:
         return jsonify({"error": "Empty prompt"}), 400
 
     return jsonify({"text": generate_deepseek_output(prompt)})
+
+
 
 @app.route("/references")
 def references():
