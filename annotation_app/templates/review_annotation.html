@@ -292,7 +292,7 @@
             </div>
 
             <div class="field review-question-block">
-              <label class="label reviewer-question">Q3. The prompts explore a relevant cultural context/component from the State.</label>
+              <label class="label reviewer-question">Q3. The prompts explore a relevant cultural context/component from Singapore.</label>
               {{ render_scale("prompt_q2", selected_answers, agreement_scale_options) }}
               {{ render_comment_box("prompt_q2_comment", selected_answers, true) }}
             </div>
@@ -331,7 +331,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        {% for axis in ["social", "economic", "cultural", "gender", "linguistic", "regional"] %}
+                        {% for axis in ["social", "economic", "religious", "gender", "linguistic", "ethnic"] %}
                         <tr>
                           <td>{{ axis|capitalize }}</td>
                           <td>{{ record.outputs[model_key][kind].hegemony[axis].present }}</td>

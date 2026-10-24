@@ -1,55 +1,17 @@
 <div class="columns">
-
-  <!-- NAME -->
   <div class="column">
     <label class="label">Name</label>
-    <div class="control">
-      <input class="input"
-            type="text"
-            name="annotator_name"
-            required
-            value="{% if draft %}{{ draft.annotator_name }}{% else %}{{ user.username }}{% endif %}"
-            readonly>
-    </div>
+    <input class="input" name="annotator_name" required readonly
+           value="{% if draft %}{{ draft.annotator_name }}{% else %}{{ user.username }}{% endif %}">
   </div>
-
-  <!--Region -->
   <div class="column">
-    <label class="label">Region</label>
-    <input type="hidden"
-           name="region"
-           value="{% if draft %}{{ draft.region }}{% else %}{{ user.region }}{% endif %}">
-    <div class="control select is-fullwidth">
-      <select id="Region"
-          required
-          onchange="updateState()"
-          disabled>
-
-        {% for Region in region_state_map.keys() %}
-          <option value="{{ Region }}"
-            {% if draft and draft.region == Region %}
-              selected
-            {% elif not draft and user.region == Region %}
-              selected
-            {% endif %}>
-            {{ Region }}
-          </option>
-        {% endfor %}
-      </select>
+    <label class="label">Study Location</label>
+    <p>Singapore</p>
+    <input type="hidden" name="region" value="Singapore">
+    <input type="hidden" name="state" value="Singapore">
+    <div hidden>
+      <select id="Region"><option value="Singapore" selected>Singapore</option></select>
+      <select id="State"><option value="Singapore" selected>Singapore</option></select>
     </div>
   </div>
-
-  <!-- State -->
-  <div class="column">
-    <label class="label">State</label>
-    <input type="hidden"
-           name="state"
-           value="{% if draft %}{{ draft.state }}{% else %}{{ user.state }}{% endif %}">
-    <div class="control select is-fullwidth">
-      <select id="State" required disabled>
-        <option value="">Select State</option>
-      </select>
-    </div>
-  </div>
-
 </div>
