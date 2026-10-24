@@ -24,7 +24,7 @@ Configure these in the server environment (never commit actual values):
 - SINGAPORE_GROQ_GPT_OSS_API_KEY
 - SINGAPORE_OPENROUTER_LLAMA_API_KEY
 - SINGAPORE_OPENROUTER_DEEPSEEK_API_KEY
-- SINGAPORE_OPENAI_API_KEY (OpenRouter embeddings, if enabled)
+- SINGAPORE_OPENROUTER_EMBEDDING_API_KEY (optional dedicated embeddings key)
 - SINGAPORE_GOOGLE_CREDS_PATH (private service-account file)
 - SINGAPORE_SHEET_ID (new dedicated spreadsheet ID)
 
@@ -63,6 +63,35 @@ and then exercise signup, eight Base/Identity outputs, draft saving, confirmatio
 admin review and CSV export in the new portal.
 
 Peer-review assignment lists start empty until Singapore annotators are onboarded.
+
+## Check Similarity
+
+Semantic prompt checking uses the existing OpenRouter embedding model
+sentence-transformers/all-minilm-l6-v2. It searches only the Singapore index,
+without state/subzone selection, over saved Base prompts. It excludes the current
+annotation when editing. The unchanged score threshold is 0.65 (near duplicate:
+0.90), minimum input length is 40 characters, and up to five matches are shown.
+
+Embedding credentials are selected in this order: OPENROUTER_EMBEDDING_API_KEY,
+legacy OPENAI_API_KEY (historically an OpenRouter key), OPENROUTER_LLAMA_API_KEY,
+OPENROUTER_DEEPSEEK_API_KEY. Thus the four-model setup needs no extra key unless
+its OpenRouter keys are restricted from using the embedding model. Embedding
+requests use provider credits according to the provider's pricing. No algorithm
+fallback or additional chat-generation model is used.
+
+Saving creates/updates the embedding; unchanged prompts reuse the saved vector.
+An empty index is reported explicitly rather than shown as a successful no-match
+check. Rebuild missing or outdated embeddings for existing records from the
+Singapore primary sheet in the configured virtual environment:
+
+```bash
+python annotation_app/scripts/backfill_prompt_embeddings.py
+```
+
+This reads the sheet and writes only the private Singapore similarity index;
+it calls OpenRouter for missing or changed embeddings and leaves annotation rows
+unchanged. Errors exit nonzero and do not expose credentials or response bodies.
+Run tests/test_prompt_similarity.py and tests/test_singapore.py for mocked checks.
 
 ## Model column names
 

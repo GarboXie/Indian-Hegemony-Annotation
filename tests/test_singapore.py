@@ -44,6 +44,20 @@ class SingaporeFlow(unittest.TestCase):
             html = client.get('/').get_data(as_text=True)
             self.assertIn('Singapore', html)
             self.assertNotIn('qwen/qwen', html)
+            # Similarity requires no geographic field and distinguishes an empty index.
+            query = 'A sufficiently long Singapore prompt to test semantic similarity.'
+            with patch.object(app, 'load_prompt_index', return_value={'items': {}}), patch.object(app, 'find_similar_for_state', return_value=[]):
+                checked = client.post('/check-prompt-similarity', json={'prompt': query})
+                self.assertEqual(checked.status_code, 200)
+                self.assertEqual(checked.json['indexed_prompt_count'], 0)
+                self.assertIn('No indexed prompts', checked.json['message'])
+            match = {'annotation_id': 'other', 'prompt': query, 'similarity': 1.0}
+            with patch.object(app, 'load_prompt_index', return_value={'items': {'other': {'base_prompt': query, 'embedding': [1, 0]}}}), patch.object(app, 'find_similar_for_state', return_value=[match]) as finder:
+                checked = client.post('/check-prompt-similarity', json={'prompt': query, 'current_annotation_id': 'self'})
+                self.assertEqual(checked.status_code, 200)
+                self.assertTrue(checked.json['near_duplicate'])
+                self.assertEqual(finder.call_args.kwargs['state'], 'Singapore')
+                self.assertEqual(finder.call_args.kwargs['exclude_annotation_id'], 'self')
             form = dict(annotator_name='test-user', base_prompt='Base test', identity_primed_prompt='Identity test', ground_truth='Ground truth')
             for model, function in [('gemini','generate_qwen_output'), ('gpt','generate_gpt_oss_output'),
                                     ('llama','generate_llama_output'), ('deepseek','generate_deepseek_output')]:

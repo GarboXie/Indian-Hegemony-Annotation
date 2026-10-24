@@ -229,13 +229,11 @@ function toggleStickyReview() {
 
 async function checkPromptSimilarity() {
   const promptBox = document.getElementById("base_prompt_input");
-  const stateHidden = document.querySelector("input[name='state']");
   const currentAnnotationInput = document.getElementById("current_annotation_id");
   const btn = document.getElementById("check_similarity_btn");
   const resultBox = document.getElementById("similarity_results");
 
   const prompt = promptBox ? promptBox.value.trim() : "";
-  const state = stateHidden ? stateHidden.value.trim() : "";
   const currentAnnotationId = currentAnnotationInput ? currentAnnotationInput.value.trim() : "";
 
   if (!prompt) {
@@ -257,7 +255,6 @@ async function checkPromptSimilarity() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         prompt,
-        state,
         current_annotation_id: currentAnnotationId
       })
     });
@@ -268,7 +265,7 @@ async function checkPromptSimilarity() {
     }
 
     if (!payload.matches || payload.matches.length === 0) {
-      resultBox.classList.add("is-success");
+      resultBox.classList.add(payload.indexed_prompt_count === 0 ? "is-info" : "is-success");
       resultBox.innerHTML = `<strong>${escapeHtml(payload.message || "No similar prompts above threshold. Please go ahead with your annotation.")}</strong>`;
       return;
     }
@@ -282,7 +279,7 @@ async function checkPromptSimilarity() {
     }).join("");
 
     resultBox.innerHTML = `
-      <p><strong>Similar prompts found. Another annotator from the same State has used a similar prompt. Please manually ensure that your prompt is different.</strong></p>
+      <p><strong>Similar prompts were found in the Singapore study. Please check that your prompt is sufficiently different.</strong></p>
       <ul>${lines}</ul>
     `;
   } catch (err) {

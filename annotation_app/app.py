@@ -28,6 +28,7 @@ from prompt_similarity import (
     find_similar_for_state,
     upsert_prompt_embedding_for_record,
     remove_prompt_embedding,
+    load_prompt_index,
 )
 from notes_store import list_notes, save_note, delete_note
 from iaa_store import (
@@ -974,14 +975,11 @@ def notes():
 def check_prompt_similarity():
     data = request.json or {}
     prompt = (data.get("prompt") or "").strip()
-    state = (data.get("state") or "").strip()
+    state = "Singapore"
     current_annotation_id = (data.get("current_annotation_id") or "").strip() or None
 
     if not prompt:
         return jsonify({"error": "Prompt is required"}), 400
-    if not state:
-        return jsonify({"error": "State is required"}), 400
-
     if len(prompt) < PROMPT_SIM_MIN_CHARS:
         return jsonify({
             "threshold": PROMPT_SIM_THRESHOLD,
@@ -991,6 +989,11 @@ def check_prompt_similarity():
         })
 
     try:
+        indexed_prompt_count = sum(
+            1 for annotation_id, item in load_prompt_index().get('items', {}).items()
+            if annotation_id != current_annotation_id and item.get('base_prompt')
+            and isinstance(item.get('embedding'), list) and item['embedding']
+        )
         matches = find_similar_for_state(
             prompt=prompt,
             state=state,
@@ -1007,7 +1010,12 @@ def check_prompt_similarity():
         "count": len(matches),
         "matches": matches,
         "near_duplicate": near_duplicate,
-        "message": "Similar prompts found." if matches else "No similar prompts above threshold."
+        "indexed_prompt_count": indexed_prompt_count,
+        "message": (
+            "No indexed prompts are available for comparison yet. Save a prompt or rebuild the similarity index."
+            if not indexed_prompt_count else
+            "Similar prompts found." if matches else "No similar prompts above threshold."
+        )
     })
 
 @app.route("/promptreview")
