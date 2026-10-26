@@ -6,7 +6,7 @@ from json import JSONDecodeError
 
 import requests
 
-from config import KEYS
+from config import KEYS, BASE_DIR
 
 OPENROUTER_EMBEDDING_URL = "https://openrouter.ai/api/v1/embeddings"
 OPENROUTER_EMBEDDING_MODEL = "sentence-transformers/all-minilm-l6-v2"
@@ -15,7 +15,7 @@ PROMPT_SIM_THRESHOLD = 0.65
 PROMPT_SIM_NEAR_DUP_THRESHOLD = 0.9
 PROMPT_SIM_MIN_CHARS = 40
 PROMPT_SIM_TOP_K = 5
-PROMPT_EMBEDDING_INDEX_PATH = "annotation_app/data/prompt_embeddings.json"
+PROMPT_EMBEDDING_INDEX_PATH = str(BASE_DIR / "data" / "mainland" / "prompt_embeddings.json")
 
 
 def _ensure_index_dir():
@@ -40,30 +40,49 @@ def cosine_similarity(vec_a, vec_b):
 
 
 def embed_prompt_openrouter(prompt):
-    response = requests.post(
-        OPENROUTER_EMBEDDING_URL,
-        headers={
-            "Authorization": f"Bearer {KEYS['OPENAI_API_KEY']}",
-            "Content-Type": "application/json",
-        },
-        data=json.dumps({
-            "model": OPENROUTER_EMBEDDING_MODEL,
-            "input": prompt,
-        }),
-        timeout=30,
-    )
-    response.raise_for_status()
-    payload = response.json()
+    # OPENAI_API_KEY is the legacy name for an OpenRouter embedding credential.
+    key = next((str(KEYS.get(name) or '').strip() for name in (
+        'OPENROUTER_EMBEDDING_API_KEY', 'OPENROUTER_LLAMA_API_KEY',
+        'OPENROUTER_DEEPSEEK_API_KEY', 'OPENAI_API_KEY',
+    ) if str(KEYS.get(name) or '').strip()), '')
+    if not key:
+        raise RuntimeError('No OpenRouter key is configured for similarity checks.')
+    try:
+        response = requests.post(
+            OPENROUTER_EMBEDDING_URL,
+            headers={
+                "Authorization": f"Bearer {key}",
+                "Content-Type": "application/json",
+            },
+            json={"model": OPENROUTER_EMBEDDING_MODEL, "input": prompt},
+            timeout=30,
+        )
+    except requests.RequestException:
+        raise RuntimeError('The similarity service could not be reached. Please try again.') from None
+    if not response.ok:
+        if response.status_code in (401, 402, 403):
+            raise RuntimeError('OpenRouter embedding access was denied. Check the key permissions and available credits.')
+        raise RuntimeError(f'The similarity service returned HTTP {response.status_code}. Please try again.')
+    try:
+        payload = response.json()
+    except ValueError:
+        raise RuntimeError('The similarity service returned an invalid response.') from None
 
-    data = payload.get("data", [])
-    if not data or "embedding" not in data[0]:
-        raise ValueError(f"Unexpected embedding response: {payload}")
+    data = payload.get("data", []) if isinstance(payload, dict) else []
+    if not data or not isinstance(data, list) or not isinstance(data[0], dict) or "embedding" not in data[0]:
+        raise ValueError('The similarity service returned no embedding.')
 
     embedding = data[0]["embedding"]
     if not isinstance(embedding, list) or not embedding:
         raise ValueError("OpenRouter returned an empty embedding.")
 
-    return _normalize_vector([float(x) for x in embedding])
+    try:
+        vector = [float(x) for x in embedding]
+    except (TypeError, ValueError):
+        raise ValueError('The similarity service returned an invalid embedding.') from None
+    if not all(math.isfinite(x) for x in vector) or not any(vector):
+        raise ValueError('The similarity service returned an invalid embedding.')
+    return _normalize_vector(vector)
 
 
 def load_prompt_index():
@@ -132,22 +151,33 @@ def upsert_prompt_embedding_for_record(record):
     if not base_prompt or _normalize_header(base_prompt) == "":
         return
 
+    cached = load_prompt_index().get('items', {}).get(annotation_id, {})
+    if (cached.get('base_prompt') == base_prompt and cached.get('state') == state
+            and isinstance(cached.get('embedding'), list) and cached['embedding']):
+        return
+
     embedding = embed_prompt_openrouter(base_prompt)
     upsert_prompt_embedding(annotation_id, state, base_prompt, embedding)
 
 
 def find_similar_for_state(prompt, state, threshold=PROMPT_SIM_THRESHOLD, top_k=PROMPT_SIM_TOP_K, exclude_annotation_id=None):
-    query_embedding = embed_prompt_openrouter(prompt)
     index_data = load_prompt_index()
     items = index_data.get("items", {})
     matches = []
 
-    for annotation_id, item in items.items():
-        if exclude_annotation_id and annotation_id == exclude_annotation_id:
-            continue
+    candidates = {
+        annotation_id: item for annotation_id, item in items.items()
+        if annotation_id != exclude_annotation_id
+        and _normalize_header(item.get('state', '')) == _normalize_header(state)
+        and item.get('base_prompt')
+        and isinstance(item.get('embedding'), list) and item['embedding']
+    }
+    if not candidates:
+        return []
+    query_embedding = embed_prompt_openrouter(prompt)
 
-        item_state = item.get("state", "")
-        if item_state != state:
+    for annotation_id, item in candidates.items():
+        if exclude_annotation_id and annotation_id == exclude_annotation_id:
             continue
 
         base_prompt = item.get("base_prompt", "")

@@ -268,7 +268,7 @@ async function checkPromptSimilarity() {
     }
 
     if (!payload.matches || payload.matches.length === 0) {
-      resultBox.classList.add("is-success");
+      resultBox.classList.add(payload.indexed_prompt_count === 0 ? "is-info" : "is-success");
       resultBox.innerHTML = `<strong>${escapeHtml(payload.message || "No similar prompts above threshold. Please go ahead with your annotation.")}</strong>`;
       return;
     }
@@ -282,7 +282,7 @@ async function checkPromptSimilarity() {
     }).join("");
 
     resultBox.innerHTML = `
-      <p><strong>Similar prompts found. Another annotator from the same State has used a similar prompt. Please manually ensure that your prompt is different.</strong></p>
+      <p><strong>Similar prompts were found in your province/area. Please check that your prompt is sufficiently different.</strong></p>
       <ul>${lines}</ul>
     `;
   } catch (err) {
