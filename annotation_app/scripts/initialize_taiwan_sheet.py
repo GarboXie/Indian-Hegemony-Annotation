@@ -13,7 +13,8 @@ def initialize_worksheets(spreadsheet, annotation_headers, review_headers):
         if name not in existing:
             continue
         values = existing[name].get_all_values()
-        if values and values[0] != headers:
+        has_content = any(any(str(cell).strip() for cell in row) for row in values)
+        if has_content and values[0] != headers:
             raise ValueError(f'{name}: unexpected data or headers; no worksheets changed.')
     for name, headers in targets.items():
         ws = existing.get(name)

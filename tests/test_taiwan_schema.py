@@ -91,6 +91,20 @@ class TaiwanSchema(unittest.TestCase):
         self.assertEqual(sheet.sheets[0].rows, [])
         self.assertEqual(len(sheet.sheets), 2)
 
+    def test_initializer_accepts_empty_row_responses(self):
+        for rows in ([[]], [[], []], [['', '']]):
+            with self.subTest(rows=rows):
+                sheet = Spreadsheet([Sheet('testing', rows)])
+                self.s['initialize_worksheets'](sheet, self.s['HEADERS'], self.s['REVIEW_HEADERS'])
+                self.assertEqual(sheet.sheets[0].rows[0], self.s['HEADERS'])
+
+    def test_initializer_rejects_data_below_blank_header(self):
+        sheet = Spreadsheet([Sheet('testing', [[], ['existing-data']])])
+        with self.assertRaises(ValueError):
+            self.s['initialize_worksheets'](sheet, self.s['HEADERS'], self.s['REVIEW_HEADERS'])
+        self.assertEqual(sheet.sheets[0].rows, [[], ['existing-data']])
+        self.assertEqual(len(sheet.sheets), 1)
+
 
 if __name__ == '__main__':
     unittest.main()
