@@ -48,7 +48,7 @@ from urllib.parse import urlencode
 
 app = Flask(__name__)
 app.secret_key = KEYS["FLASK_SECRET_KEY"]
-app.config["SESSION_COOKIE_NAME"] = "singapore_portal_session"
+app.config["SESSION_COOKIE_NAME"] = "taiwan_portal_session"
 app.register_blueprint(auth_bp)
 initialize_iaa_storage()
 
@@ -95,6 +95,8 @@ def inject_template_flags():
     user = session.get("user") or {}
     username = user.get("username")
     return {
+        "hegemony_axes": HEGEMONY_AXES,
+        "axis_descriptions": AXIS_DESCRIPTIONS,
         "show_timesheet_link": _normalize_username(username) in ONBOARDED_ANNOTATOR_SET,
         "show_inter_annotator_review_link": _can_access_inter_annotator_review(user),
     }
@@ -975,7 +977,7 @@ def notes():
 def check_prompt_similarity():
     data = request.json or {}
     prompt = (data.get("prompt") or "").strip()
-    state = "Singapore"
+    state = "Taiwan"
     current_annotation_id = (data.get("current_annotation_id") or "").strip() or None
 
     if not prompt:

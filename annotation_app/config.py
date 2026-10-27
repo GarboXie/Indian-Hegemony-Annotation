@@ -6,34 +6,42 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 
 # This branch always uses its own namespace, including with a shared data root.
-DATA_DIR = Path(os.environ.get("SINGAPORE_DATA_ROOT", str(BASE_DIR / "data"))).resolve() / "singapore"
+DATA_DIR = Path(os.environ.get("TAIWAN_DATA_ROOT", str(BASE_DIR / "data"))).resolve() / "taiwan"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 DATA_FILE = DATA_DIR / "annotations.jsonl"
 ANNOTATORS_FILE = DATA_DIR / "annotators.json"
 
-REGION_STATE_MAP = {"Singapore": ["Singapore"]}
+REGION_STATE_MAP = {"Taiwan": ["Taiwan"]}
 
 # Update for pythonanywhere
 # Update this list whenever new annotators are onboarded and should be highlighted in admin.
 ONBOARDED_ANNOTATOR_USERNAMES = ["admin"]
 
-ONBOARDED_ANNOTATOR_USERNAMES_STATES = {"admin": "Singapore"}
+ONBOARDED_ANNOTATOR_USERNAMES_STATES = {"admin": "Taiwan"}
 
 HEGEMONY_AXES = [
 	"social",
 	"economic",
-	"religious",
 	"gender",
 	"linguistic",
 	"ethnic"
 ]
 
-SHEET_NAME = "singapore-cultural-hegemony-annotations"
-SHEET_ID = os.environ.get("SINGAPORE_SHEET_ID", "").strip()
+# Summaries of the Taiwan tab supplied by the study owner.
+AXIS_DESCRIPTIONS = {
+    "social": "Treating stable, prestigious careers and competitive educational pathways as the normal route to social legitimacy, while marginalising alternative livelihoods and life choices.",
+    "economic": "Explaining success through individual effort while overlooking inherited resources, unequal opportunities, stagnant wages, housing costs and differences in everyday financial security.",
+    "gender": "Normalising marriage, parenthood, patrilineal expectations and gendered caregiving or breadwinning roles while marginalising alternative family and gender arrangements.",
+    "linguistic": "Presenting Mandarin or a prestigious language variety as universally representative, while overlooking Taiwanese Hokkien, Hakka, Indigenous and immigrant languages and unequal recognition.",
+    "ethnic": "Treating dominant Han Taiwanese experiences as representative of everyone, flattening differences among related communities, or reducing immigrants and migrant workers to stereotypes.",
+}
 
-GOOGLE_CREDS_PATH = Path(os.environ.get("SINGAPORE_GOOGLE_CREDS_PATH", str(BASE_DIR / "accounts" / "singapore" / "google_creds.json")))
+SHEET_NAME = "taiwan-cultural-hegemony-annotations"
+SHEET_ID = os.environ.get("TAIWAN_SHEET_ID", "").strip()
 
-API_KEYS_PATH = BASE_DIR / "accounts" / "singapore" / "apikeys.json"
+GOOGLE_CREDS_PATH = Path(os.environ.get("TAIWAN_GOOGLE_CREDS_PATH", str(BASE_DIR / "accounts" / "taiwan" / "google_creds.json")))
+
+API_KEYS_PATH = BASE_DIR / "accounts" / "taiwan" / "apikeys.json"
 
 KEYS = {}
 if API_KEYS_PATH.exists():
@@ -45,8 +53,8 @@ for _name in (
     "OPENROUTER_DEEPSEEK_API_KEY", "OPENAI_API_KEY",
     "OPENROUTER_EMBEDDING_API_KEY",
 ):
-    if os.environ.get("SINGAPORE_" + _name):
-        KEYS[_name] = os.environ["SINGAPORE_" + _name]
+    if os.environ.get("TAIWAN_" + _name):
+        KEYS[_name] = os.environ["TAIWAN_" + _name]
 
 # Internal aliases stay stable for saved drafts and existing JSON records.
 MODEL_COLUMN_KEYS = {
@@ -63,165 +71,19 @@ NEUTRAL_MODEL_COLUMN_KEYS = {
     "deepseek": "model4",
 }
 
-LEGACY_HEADERS = [
-	# --- metadata ---
-	"id",
-	"timestamp",
-	"annotator_name",
-	"region",
-	"state",
+# Public columns use actual model names; all five axes come from one definition.
+HEADERS = ["id", "timestamp", "annotator_name", "base_prompt", "identity_prompt"]
+for _model in MODEL_COLUMN_KEYS.values():
+    for _kind in ("base", "identity"):
+        _prefix = f"{_model}_{_kind}"
+        HEADERS.extend([f"{_prefix}_output", f"{_prefix}_hallucination"])
+        for _axis in HEGEMONY_AXES:
+            HEADERS.extend([f"{_prefix}_{_axis}", f"{_prefix}_{_axis}_impact"])
+HEADERS.extend(["ground_truth", "references", "expert_reviews", "isAccept", "annotator_addressed"])
 
-	# --- prompts ---
-	"base_prompt",
-	"identity_prompt",
-
-	# === GEMINI BASE ===
-	"gemini_base_output",
-	"gemini_base_hallucination",
-	"gemini_base_social",
-	"gemini_base_social_impact",
-	"gemini_base_economic",
-	"gemini_base_economic_impact",
-	"gemini_base_religious",
-	"gemini_base_religious_impact",
-	"gemini_base_gender",
-	"gemini_base_gender_impact",
-	"gemini_base_linguistic",
-	"gemini_base_linguistic_impact",
-	"gemini_base_ethnic",
-	"gemini_base_ethnic_impact",
-
-	# === GEMINI IDENTITY ===
-	"gemini_identity_output",
-	"gemini_identity_hallucination",
-	"gemini_identity_social",
-	"gemini_identity_social_impact",
-	"gemini_identity_economic",
-	"gemini_identity_economic_impact",
-	"gemini_identity_religious",
-	"gemini_identity_religious_impact",
-	"gemini_identity_gender",
-	"gemini_identity_gender_impact",
-	"gemini_identity_linguistic",
-	"gemini_identity_linguistic_impact",
-	"gemini_identity_ethnic",
-	"gemini_identity_ethnic_impact",
-
-	# === GPT BASE ===
-	"gpt_base_output",
-	"gpt_base_hallucination",
-	"gpt_base_social",
-	"gpt_base_social_impact",
-	"gpt_base_economic",
-	"gpt_base_economic_impact",
-	"gpt_base_religious",
-	"gpt_base_religious_impact",
-	"gpt_base_gender",
-	"gpt_base_gender_impact",
-	"gpt_base_linguistic",
-	"gpt_base_linguistic_impact",
-	"gpt_base_ethnic",
-	"gpt_base_ethnic_impact",
-
-	# === GPT IDENTITY ===
-	"gpt_identity_output",
-	"gpt_identity_hallucination",
-	"gpt_identity_social",
-	"gpt_identity_social_impact",
-	"gpt_identity_economic",
-	"gpt_identity_economic_impact",
-	"gpt_identity_religious",
-	"gpt_identity_religious_impact",
-	"gpt_identity_gender",
-	"gpt_identity_gender_impact",
-	"gpt_identity_linguistic",
-	"gpt_identity_linguistic_impact",
-	"gpt_identity_ethnic",
-	"gpt_identity_ethnic_impact",
-
-	# === LLAMA i.e GPT-OSS-120B BASE ===
-	"llama_base_output",
-	"llama_base_hallucination",
-	"llama_base_social",
-	"llama_base_social_impact",
-	"llama_base_economic",
-	"llama_base_economic_impact",
-	"llama_base_religious",
-	"llama_base_religious_impact",
-	"llama_base_gender",
-	"llama_base_gender_impact",
-	"llama_base_linguistic",
-	"llama_base_linguistic_impact",
-	"llama_base_ethnic",
-	"llama_base_ethnic_impact",
-
-	# === LLAMA i.e GPT-OSS-120B IDENTITY ===
-	"llama_identity_output",
-	"llama_identity_hallucination",
-	"llama_identity_social",
-	"llama_identity_social_impact",
-	"llama_identity_economic",
-	"llama_identity_economic_impact",
-	"llama_identity_religious",
-	"llama_identity_religious_impact",
-	"llama_identity_gender",
-	"llama_identity_gender_impact",
-	"llama_identity_linguistic",
-	"llama_identity_linguistic_impact",
-	"llama_identity_ethnic",
-	"llama_identity_ethnic_impact",
-
-	# === DEEPSEEK BASE ===
-	"deepseek_base_output",
-	"deepseek_base_hallucination",
-	"deepseek_base_social",
-	"deepseek_base_social_impact",
-	"deepseek_base_economic",
-	"deepseek_base_economic_impact",
-	"deepseek_base_religious",
-	"deepseek_base_religious_impact",
-	"deepseek_base_gender",
-	"deepseek_base_gender_impact",
-	"deepseek_base_linguistic",
-	"deepseek_base_linguistic_impact",
-	"deepseek_base_ethnic",
-	"deepseek_base_ethnic_impact",
-
-	# === DEEPSEEK IDENTITY ===
-	"deepseek_identity_output",
-	"deepseek_identity_hallucination",
-	"deepseek_identity_social",
-	"deepseek_identity_social_impact",
-	"deepseek_identity_economic",
-	"deepseek_identity_economic_impact",
-	"deepseek_identity_religious",
-	"deepseek_identity_religious_impact",
-	"deepseek_identity_gender",
-	"deepseek_identity_gender_impact",
-	"deepseek_identity_linguistic",
-	"deepseek_identity_linguistic_impact",
-	"deepseek_identity_ethnic",
-	"deepseek_identity_ethnic_impact",
-
-	"ground_truth",
-
-	# --- references ---
-	"references",
-	"expert_reviews",
-	"isAccept",
-	"annotator_addressed",
-]
-
-# Previous public schema, retained for explicit migration and compatibility.
-NEUTRAL_HEADERS = [
-    NEUTRAL_MODEL_COLUMN_KEYS.get(header.split("_", 1)[0], header.split("_", 1)[0])
-    + ("_" + header.split("_", 1)[1] if "_" in header else "")
-    for header in LEGACY_HEADERS
-]
-
-HEADERS = [
-    MODEL_COLUMN_KEYS.get(header.split("_", 1)[0], header.split("_", 1)[0])
-    + ("_" + header.split("_", 1)[1] if "_" in header else "")
-    for header in LEGACY_HEADERS
-    if header not in {"region", "state"}
+REVIEW_HEADERS = [
+    "review_id", "annotation_id", "reviewer_username", "model", "prompt_type",
+    "Q1_prompt_format", "Q2_prompt_context_valid", "Q3_identity_relevance_format",
+    "Q4_hegemony_present", "Q5_axes_correct", "Q6_impact_correct", "Q7_severity",
+    "ground_truth_rating", "needs_adjudication", "timestamp",
 ]

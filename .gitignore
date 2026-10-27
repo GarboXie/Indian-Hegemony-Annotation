@@ -8,5 +8,6 @@ annotation_app/data/
 annotators.json
 .venv/
 annotation_app/accounts/singapore/
+annotation_app/accounts/taiwan/
 .env
 __pycache__/

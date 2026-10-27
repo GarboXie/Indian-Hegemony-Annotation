@@ -85,7 +85,7 @@ def build_record(form):
     return {
             "id": str(uuid.uuid4()),
             "timestamp": datetime.utcnow().isoformat(),
-            "model_config_version": "singapore_v1_2026_10",
+            "model_config_version": "taiwan_v1_2026_10",
             
 "model_mapping": {
     "gemini": {
@@ -112,8 +112,8 @@ def build_record(form):
 
 
             "annotator_name": form["annotator_name"],
-            "region": "Singapore",
-            "state": "Singapore",
+            "region": "Taiwan",
+            "state": "Taiwan",
 
             "prompts": {
                 "base": form.get("base_prompt"),

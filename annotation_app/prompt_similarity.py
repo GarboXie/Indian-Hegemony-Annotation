@@ -42,8 +42,8 @@ def cosine_similarity(vec_a, vec_b):
 def embed_prompt_openrouter(prompt):
     # OPENAI_API_KEY is the legacy name for an OpenRouter embedding credential.
     key = next((str(KEYS.get(name) or '').strip() for name in (
-        'OPENROUTER_EMBEDDING_API_KEY', 'OPENAI_API_KEY',
-        'OPENROUTER_LLAMA_API_KEY', 'OPENROUTER_DEEPSEEK_API_KEY',
+        'OPENROUTER_EMBEDDING_API_KEY', 'OPENROUTER_LLAMA_API_KEY',
+        'OPENROUTER_DEEPSEEK_API_KEY', 'OPENAI_API_KEY',
     ) if str(KEYS.get(name) or '').strip()), '')
     if not key:
         raise RuntimeError('No OpenRouter key is configured for similarity checks.')
@@ -126,7 +126,7 @@ def upsert_prompt_embedding(annotation_id, state, base_prompt, embedding):
     index_data = load_prompt_index()
     index_data["items"][annotation_id] = {
         "annotation_id": annotation_id,
-        "state": "Singapore",
+        "state": "Taiwan",
         "base_prompt": base_prompt or "",
         "embedding": embedding,
         "updated_at": datetime.utcnow().isoformat(),
@@ -161,7 +161,7 @@ def upsert_prompt_embedding_for_record(record):
 
 
 def find_similar_for_state(prompt, state, threshold=PROMPT_SIM_THRESHOLD, top_k=PROMPT_SIM_TOP_K, exclude_annotation_id=None):
-    # Compatibility name; this index belongs exclusively to the Singapore study.
+    # Compatibility name; this index belongs exclusively to the Taiwan study.
     index_data = load_prompt_index()
     items = index_data.get("items", {})
     matches = []

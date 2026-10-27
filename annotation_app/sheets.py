@@ -20,35 +20,14 @@ REVIEW_SHEET = "testreview"
 
 #---- for change on pythonanywhere
 
-LEGACY_REVIEW_HEADERS = [
-    "review_id",
-    "annotation_id",
-    "reviewer_username",
-    "region",
-    "state",
-    "model",
-    "prompt_type",
-    "Q1_prompt_format",
-    "Q2_prompt_context_valid",
-    "Q3_identity_relevance_format",
-    "Q4_hegemony_present",
-    "Q5_axes_correct",
-    "Q6_impact_correct",
-    "Q7_severity",
-    "ground_truth_rating",
-    "needs_adjudication",
-    "timestamp",
-]
-REVIEW_HEADERS = [h for h in LEGACY_REVIEW_HEADERS if h not in {"region", "state"}]
-
 _client = gspread.authorize(_creds)
 if not SHEET_ID:
-    raise RuntimeError("Set SINGAPORE_SHEET_ID to a new, dedicated Singapore spreadsheet ID.")
+    raise RuntimeError("Set TAIWAN_SHEET_ID to a new, dedicated Taiwan spreadsheet ID.")
 
 def _open_study_sheet():
     spreadsheet = _client.open_by_key(SHEET_ID)
     if spreadsheet.title != SHEET_NAME:
-        raise RuntimeError("Singapore spreadsheet title does not match the dedicated study name.")
+        raise RuntimeError("Taiwan spreadsheet title does not match the dedicated study name.")
     return spreadsheet
 
 _worksheet = _open_study_sheet().worksheet(MAIN_SHEET)
@@ -60,7 +39,7 @@ def _ensure_sheet_headers(worksheet, headers):
         return
 
     if existing_headers:
-        raise ValueError("Sheet schema differs. Run scripts/migrate_singapore_sheet.py before using the updated portal.")
+        raise ValueError("Unexpected Taiwan sheet headers. Use a dedicated Taiwan spreadsheet initialized with scripts/initialize_taiwan_sheet.py.")
 
     worksheet.resize(cols=max(worksheet.col_count, len(headers)))
     worksheet.update(
@@ -86,8 +65,8 @@ def _row_map_to_record(row_map: dict) -> dict:
         "id": str(row_map.get("id", "")).strip(),
         "timestamp": row_map.get("timestamp", ""),
         "annotator_name": row_map.get("annotator_name", ""),
-        "region": "Singapore",
-        "state": "Singapore",
+        "region": "Taiwan",
+        "state": "Taiwan",
         "prompts": {
             "base": row_map.get("base_prompt", ""),
             "identity": row_map.get("identity_prompt", ""),
