@@ -22,12 +22,12 @@ REVIEW_SHEET = "testreview"
 
 _client = gspread.authorize(_creds)
 if not SHEET_ID:
-    raise RuntimeError("Set TAIWAN_SHEET_ID to a new, dedicated Taiwan spreadsheet ID.")
+    raise RuntimeError("Set HONGKONG_SHEET_ID to a new, dedicated Hong Kong spreadsheet ID.")
 
 def _open_study_sheet():
     spreadsheet = _client.open_by_key(SHEET_ID)
     if spreadsheet.title != SHEET_NAME:
-        raise RuntimeError("Taiwan spreadsheet title does not match the dedicated study name.")
+        raise RuntimeError("Hong Kong spreadsheet title does not match the dedicated study name.")
     return spreadsheet
 
 _worksheet = _open_study_sheet().worksheet(MAIN_SHEET)
@@ -39,7 +39,7 @@ def _ensure_sheet_headers(worksheet, headers):
         return
 
     if existing_headers:
-        raise ValueError("Unexpected Taiwan sheet headers. Use a dedicated Taiwan spreadsheet initialized with scripts/initialize_taiwan_sheet.py.")
+        raise ValueError("Unexpected Hong Kong sheet headers. Use a dedicated Hong Kong spreadsheet initialized with scripts/initialize_hongkong_sheet.py.")
 
     worksheet.resize(cols=max(worksheet.col_count, len(headers)))
     worksheet.update(
@@ -65,8 +65,8 @@ def _row_map_to_record(row_map: dict) -> dict:
         "id": str(row_map.get("id", "")).strip(),
         "timestamp": row_map.get("timestamp", ""),
         "annotator_name": row_map.get("annotator_name", ""),
-        "region": "Taiwan",
-        "state": "Taiwan",
+        "region": "Hong Kong",
+        "state": "Hong Kong",
         "prompts": {
             "base": row_map.get("base_prompt", ""),
             "identity": row_map.get("identity_prompt", ""),

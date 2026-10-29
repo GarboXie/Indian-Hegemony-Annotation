@@ -49,15 +49,15 @@ class PromptSimilarity(unittest.TestCase):
 
     def test_saved_prompt_match_self_exclusion_and_update(self):
         m = self.module
-        record = {'id': 'a', 'prompts': {'base': 'A Taiwan prompt for comparison'}}
+        record = {'id': 'a', 'prompts': {'base': 'A Hong Kong prompt for comparison'}}
         with patch.object(m, 'embed_prompt_openrouter', return_value=[1, 0]) as embed:
             m.upsert_prompt_embedding_for_record(record)
             m.upsert_prompt_embedding_for_record(record)
             self.assertEqual(embed.call_count, 1)
-            self.assertEqual(self.index['items']['a']['state'], 'Taiwan')
+            self.assertEqual(self.index['items']['a']['state'], 'Hong Kong')
             self.assertEqual(m.find_similar_for_state('same meaning', None)[0]['similarity'], 1.0)
             self.assertEqual(m.find_similar_for_state('same meaning', None, exclude_annotation_id='a'), [])
-            record['prompts']['base'] = 'Updated Taiwan prompt'
+            record['prompts']['base'] = 'Updated Hong Kong prompt'
             m.upsert_prompt_embedding_for_record(record)
             self.assertEqual(self.index['items']['a']['base_prompt'], record['prompts']['base'])
 

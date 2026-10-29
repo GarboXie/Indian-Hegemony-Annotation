@@ -1,4 +1,4 @@
-"""Run interactively on the Taiwan server; secrets are never printed."""
+"""Run interactively on the Hong Kong server; secrets are never printed."""
 import json
 import secrets
 from getpass import getpass
@@ -18,7 +18,7 @@ def required(label, confirm=False):
 
 
 def main():
-    folder = Path(__file__).resolve().parents[1] / 'accounts' / 'taiwan'
+    folder = Path(__file__).resolve().parents[1] / 'accounts' / 'hongkong'
     folder.mkdir(parents=True, exist_ok=True, mode=0o700)
     path = folder / 'apikeys.json'
     text = path.read_text(encoding='utf-8').strip() if path.exists() else ''
@@ -27,8 +27,8 @@ def main():
     if not config.get('FLASK_SECRET_KEY'):
         config['FLASK_SECRET_KEY'] = secrets.token_hex(32)
     for name, label in [
-        ('ADMIN_PASSWORD_HASH', 'Set Taiwan admin password: '),
-        ('ANNOTATOR_PASSWORD_HASH', 'Set Taiwan signup invitation code: '),
+        ('ADMIN_PASSWORD_HASH', 'Set Hong Kong admin password: '),
+        ('ANNOTATOR_PASSWORD_HASH', 'Set Hong Kong signup invitation code: '),
     ]:
         if not config.get(name):
             config[name] = generate_password_hash(required(label, confirm=True))
@@ -42,7 +42,7 @@ def main():
     temp.write_text(json.dumps(config, indent=2), encoding='utf-8')
     temp.replace(path)
     path.chmod(0o600)
-    print('Taiwan private settings saved. Existing configured values were preserved.')
+    print('Hong Kong private settings saved. Existing configured values were preserved.')
 
 
 if __name__ == '__main__':

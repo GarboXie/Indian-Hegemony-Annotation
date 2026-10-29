@@ -13,17 +13,18 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "annotation_app"))
 
 
-class TaiwanFlow(unittest.TestCase):
+class HongKongFlow(unittest.TestCase):
     def test_complete_flow(self):
         from werkzeug.security import generate_password_hash
         with tempfile.TemporaryDirectory() as tmp, patch.dict(os.environ, {
-            "LOCAL_DEMO": "1", "TAIWAN_DATA_ROOT": tmp,
-            "TAIWAN_SHEET_ID": "test-taiwan-sheet",
+            "LOCAL_DEMO": "1", "HONGKONG_DATA_ROOT": tmp,
+            "HONGKONG_SHEET_ID": "test-hongkong-sheet",
             "SINGAPORE_SHEET_ID": "wrong-sheet-must-not-be-used",
-            "TAIWAN_FLASK_SECRET_KEY": "temporary-test-session-key",
-            "TAIWAN_ANNOTATOR_PASSWORD_HASH": generate_password_hash("test-code"),
-            "TAIWAN_ADMIN_USERNAME": "test-admin",
-            "TAIWAN_ADMIN_PASSWORD_HASH": generate_password_hash("test-admin-password"),
+            "TAIWAN_SHEET_ID": "wrong-taiwan-sheet-must-not-be-used",
+            "HONGKONG_FLASK_SECRET_KEY": "temporary-test-session-key",
+            "HONGKONG_ANNOTATOR_PASSWORD_HASH": generate_password_hash("test-code"),
+            "HONGKONG_ADMIN_USERNAME": "test-admin",
+            "HONGKONG_ADMIN_PASSWORD_HASH": generate_password_hash("test-admin-password"),
         }), patch("requests.sessions.Session.request", side_effect=AssertionError("Network disabled")):
             import config, app, storage, auth, draft_store, notes_store, iaa_store, prompt_similarity
             app.app.config.update(TESTING=True)
@@ -34,10 +35,10 @@ class TaiwanFlow(unittest.TestCase):
                          prompt_similarity.PROMPT_EMBEDDING_INDEX_PATH,
                          app._iar_assignments_file_path()]:
                 self.assertTrue(Path(path).is_relative_to(config.DATA_DIR), path)
-            self.assertEqual(app.app.config['SESSION_COOKIE_NAME'], 'taiwan_portal_session')
-            self.assertEqual(config.SHEET_ID, 'test-taiwan-sheet')
-            self.assertEqual(config.SHEET_NAME, 'taiwan-cultural-hegemony-annotations')
-            self.assertEqual(config.API_KEYS_PATH.parts[-3:], ('accounts', 'taiwan', 'apikeys.json'))
+            self.assertEqual(app.app.config['SESSION_COOKIE_NAME'], 'hongkong_portal_session')
+            self.assertEqual(config.SHEET_ID, 'test-hongkong-sheet')
+            self.assertEqual(config.SHEET_NAME, 'hongkong-cultural-hegemony-annotations')
+            self.assertEqual(config.API_KEYS_PATH.parts[-3:], ('accounts', 'hongkong', 'apikeys.json'))
             self.assertEqual(client.get('/').status_code, 302)
             self.assertEqual(client.post('/access-code', data={'secret_code':'test-code'}).status_code, 302)
             signup = dict(username='test-user', password='test-password', state='Other',
@@ -45,12 +46,12 @@ class TaiwanFlow(unittest.TestCase):
                           field_of_study='Research', social_theory_training='Yes',
                           llm_experience_level='Advanced', urban_rural_background='Urban')
             self.assertEqual(client.post('/signup', data=signup).status_code, 302)
-            self.assertEqual(auth.load_annotators()[0]['state'], 'Taiwan')
+            self.assertEqual(auth.load_annotators()[0]['state'], 'Hong Kong')
             html = client.get('/').get_data(as_text=True)
-            self.assertIn('Taiwan', html)
+            self.assertIn('Hong Kong', html)
             self.assertNotIn('qwen/qwen', html)
             self.assertNotIn('_religious', html)
-            self.assertIn('12NAq50EGfsqa4CFQ0wyQ4Q47NRfAp6H1-qw0mYvQXN8/edit?tab=t.rojo4iiwribr', html)
+            self.assertIn('12NAq50EGfsqa4CFQ0wyQ4Q47NRfAp6H1-qw0mYvQXN8/edit?tab=t.0', html)
             for model in ['gemini', 'gpt', 'llama', 'deepseek']:
                 for kind in ['base', 'identity']:
                     for axis in config.HEGEMONY_AXES:
@@ -60,7 +61,7 @@ class TaiwanFlow(unittest.TestCase):
             self.assertNotIn('caste', reference.get_data(as_text=True))
             self.assertIn('Ethnic', reference.get_data(as_text=True))
             # Similarity requires no geographic field and distinguishes an empty index.
-            query = 'A sufficiently long Taiwan prompt to test semantic similarity.'
+            query = 'A sufficiently long Hong Kong prompt to test semantic similarity.'
             with patch.object(app, 'load_prompt_index', return_value={'items': {}}), patch.object(app, 'find_similar_for_state', return_value=[]):
                 checked = client.post('/check-prompt-similarity', json={'prompt': query})
                 self.assertEqual(checked.status_code, 200)
@@ -71,7 +72,7 @@ class TaiwanFlow(unittest.TestCase):
                 checked = client.post('/check-prompt-similarity', json={'prompt': query, 'current_annotation_id': 'self'})
                 self.assertEqual(checked.status_code, 200)
                 self.assertTrue(checked.json['near_duplicate'])
-                self.assertEqual(finder.call_args.kwargs['state'], 'Taiwan')
+                self.assertEqual(finder.call_args.kwargs['state'], 'Hong Kong')
                 self.assertEqual(finder.call_args.kwargs['exclude_annotation_id'], 'self')
             form = dict(annotator_name='test-user', base_prompt='Base test', identity_primed_prompt='Identity test', ground_truth='Ground truth')
             for model, function in [('gemini','generate_qwen_output'), ('gpt','generate_gpt_oss_output'),
@@ -94,10 +95,10 @@ class TaiwanFlow(unittest.TestCase):
             self.assertEqual(len(storage.load_records()), 1)
             record = storage.load_records()[0]
             self.assertEqual(len(storage.json_to_row(record)), len(config.HEADERS))
-            self.assertEqual(record['state'], 'Taiwan')
-            notes_store.save_note('test-user', 'Test note', 'Taiwan')
+            self.assertEqual(record['state'], 'Hong Kong')
+            notes_store.save_note('test-user', 'Test note', 'Hong Kong')
             self.assertEqual(len(notes_store.list_notes('test-user')), 1)
-            iaa_store.save_iaa_review(dict(annotation_id=annotation_id, reviewer_name='peer', reviewer_state='Taiwan', annotation_creator='test-user', review_timestamp='2026-10-24T00:00:00', editable=0, completed=1))
+            iaa_store.save_iaa_review(dict(annotation_id=annotation_id, reviewer_name='peer', reviewer_state='Hong Kong', annotation_creator='test-user', review_timestamp='2026-10-24T00:00:00', editable=0, completed=1))
             self.assertIsNotNone(iaa_store.fetch_iaa_review(annotation_id, 'peer'))
             client.get('/logout')
             self.assertEqual(client.post('/login', data={'username':'test-user','password':'test-password'}).status_code, 302)

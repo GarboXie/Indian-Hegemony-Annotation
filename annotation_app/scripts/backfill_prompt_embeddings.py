@@ -19,7 +19,7 @@ def main():
         print('Backfill complete. Added=0, Skipped=0, Failed=0')
         return
     if values[0] != HEADERS:
-        raise RuntimeError('Unexpected Taiwan sheet headers; backfill stopped without changing the sheet.')
+        raise RuntimeError('Unexpected Hong Kong sheet headers; backfill stopped without changing the sheet.')
     records = [
         _row_map_to_record(dict(zip(HEADERS, row + [''] * max(0, len(HEADERS) - len(row)))))
         for row in values[1:] if any(str(cell).strip() for cell in row)

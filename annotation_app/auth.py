@@ -65,7 +65,7 @@ def signup():
 
         username = request.form["username"]
         password = generate_password_hash(request.form["password"])
-        state = "Taiwan"
+        state = "Hong Kong"
         region = get_region_from_state(state)
 
         annotators = load_annotators()

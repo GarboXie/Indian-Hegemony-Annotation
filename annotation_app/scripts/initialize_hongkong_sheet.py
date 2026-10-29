@@ -1,4 +1,4 @@
-"""Initialize a new Taiwan spreadsheet without relabeling existing data."""
+"""Initialize a new Hong Kong spreadsheet without relabeling existing data."""
 import sys
 from pathlib import Path
 
@@ -32,10 +32,10 @@ def main():
     import gspread
     from config import GOOGLE_CREDS_PATH, SHEET_ID, SHEET_NAME, HEADERS, REVIEW_HEADERS
     if not SHEET_ID:
-        raise RuntimeError('Set TAIWAN_SHEET_ID to the new Taiwan spreadsheet ID.')
+        raise RuntimeError('Set HONGKONG_SHEET_ID to the new Hong Kong spreadsheet ID.')
     spreadsheet = gspread.service_account(filename=str(GOOGLE_CREDS_PATH)).open_by_key(SHEET_ID)
     if spreadsheet.title != SHEET_NAME:
-        raise RuntimeError(f'The dedicated Taiwan sheet must be named {SHEET_NAME}.')
+        raise RuntimeError(f'The dedicated Hong Kong sheet must be named {SHEET_NAME}.')
     initialize_worksheets(spreadsheet, HEADERS, REVIEW_HEADERS)
 
 

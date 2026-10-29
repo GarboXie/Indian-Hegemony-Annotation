@@ -1,6 +1,6 @@
 """
 Local development replacement for Google Sheets.
-Annotations are stored in the isolated Taiwan data directory.
+Annotations are stored in the isolated Hong Kong data directory.
 No data is sent to Google Sheets in local mode.
 """
 

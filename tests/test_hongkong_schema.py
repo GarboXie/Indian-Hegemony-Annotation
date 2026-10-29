@@ -1,4 +1,4 @@
-"""Taiwan's five-axis schema and safe new-sheet setup, without credentials."""
+"""Hong Kong's five-axis schema and safe new-sheet setup, without credentials."""
 import ast
 import unittest
 from pathlib import Path
@@ -40,14 +40,14 @@ class Spreadsheet:
         return sheet
 
 
-class TaiwanSchema(unittest.TestCase):
+class HongKongSchema(unittest.TestCase):
     def setUp(self):
         self.s = {}
         selected_definitions(ROOT / 'config.py', {'HEGEMONY_AXES', 'AXIS_DESCRIPTIONS', 'MODEL_COLUMN_KEYS',
                             'NEUTRAL_MODEL_COLUMN_KEYS', 'HEADERS', 'REVIEW_HEADERS'}, self.s)
         selected_definitions(ROOT / 'storage.py', {'json_to_row'}, self.s)
         selected_definitions(ROOT / 'sheets.py', {'_row_map_to_record', '_normalize_yes_no'}, self.s)
-        selected_definitions(ROOT / 'scripts/initialize_taiwan_sheet.py', {'initialize_worksheets'}, self.s)
+        selected_definitions(ROOT / 'scripts/initialize_hongkong_sheet.py', {'initialize_worksheets'}, self.s)
 
     def test_five_axes_and_eight_outputs_roundtrip(self):
         s = self.s
@@ -64,8 +64,8 @@ class TaiwanSchema(unittest.TestCase):
                 for axis in s['HEGEMONY_AXES']:
                     row[f'{model}_{kind}_{axis}'] = 'yes'
         record = s['_row_map_to_record'](row)
-        self.assertEqual(record['state'], 'Taiwan')
-        self.assertEqual(record['region'], 'Taiwan')
+        self.assertEqual(record['state'], 'Hong Kong')
+        self.assertEqual(record['region'], 'Hong Kong')
         serialized = s['json_to_row'](record)
         again = s['_row_map_to_record'](dict(zip(s['HEADERS'], serialized)))
         self.assertEqual(again, record)
@@ -79,9 +79,9 @@ class TaiwanSchema(unittest.TestCase):
         init = self.s['initialize_worksheets']
         init(sheet, self.s['HEADERS'], self.s['REVIEW_HEADERS'])
         self.assertEqual([len(ws.rows[0]) for ws in sheet.sheets], [106, 106, 15])
-        sheet.sheets[0].rows.append(['existing-taiwan-id'])
+        sheet.sheets[0].rows.append(['existing-hongkong-id'])
         init(sheet, self.s['HEADERS'], self.s['REVIEW_HEADERS'])
-        self.assertEqual(sheet.sheets[0].rows[1], ['existing-taiwan-id'])
+        self.assertEqual(sheet.sheets[0].rows[1], ['existing-hongkong-id'])
         self.assertEqual(len(sheet.sheets), 3)
 
     def test_initializer_refuses_other_campaign_before_writing(self):

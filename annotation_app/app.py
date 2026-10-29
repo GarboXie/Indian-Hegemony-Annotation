@@ -48,7 +48,7 @@ from urllib.parse import urlencode
 
 app = Flask(__name__)
 app.secret_key = KEYS["FLASK_SECRET_KEY"]
-app.config["SESSION_COOKIE_NAME"] = "taiwan_portal_session"
+app.config["SESSION_COOKIE_NAME"] = "hongkong_portal_session"
 app.register_blueprint(auth_bp)
 initialize_iaa_storage()
 
@@ -977,7 +977,7 @@ def notes():
 def check_prompt_similarity():
     data = request.json or {}
     prompt = (data.get("prompt") or "").strip()
-    state = "Taiwan"
+    state = "Hong Kong"
     current_annotation_id = (data.get("current_annotation_id") or "").strip() or None
 
     if not prompt:

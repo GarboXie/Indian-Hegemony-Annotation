@@ -1,4 +1,4 @@
-"""WSGI entry point for the independent Taiwan deployment."""
+"""WSGI entry point for the independent Hong Kong deployment."""
 import sys
 from pathlib import Path
 

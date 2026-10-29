@@ -6,18 +6,18 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 
 # This branch always uses its own namespace, including with a shared data root.
-DATA_DIR = Path(os.environ.get("TAIWAN_DATA_ROOT", str(BASE_DIR / "data"))).resolve() / "taiwan"
+DATA_DIR = Path(os.environ.get("HONGKONG_DATA_ROOT", str(BASE_DIR / "data"))).resolve() / "hongkong"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 DATA_FILE = DATA_DIR / "annotations.jsonl"
 ANNOTATORS_FILE = DATA_DIR / "annotators.json"
 
-REGION_STATE_MAP = {"Taiwan": ["Taiwan"]}
+REGION_STATE_MAP = {"Hong Kong": ["Hong Kong"]}
 
 # Update for pythonanywhere
 # Update this list whenever new annotators are onboarded and should be highlighted in admin.
 ONBOARDED_ANNOTATOR_USERNAMES = ["admin"]
 
-ONBOARDED_ANNOTATOR_USERNAMES_STATES = {"admin": "Taiwan"}
+ONBOARDED_ANNOTATOR_USERNAMES_STATES = {"admin": "Hong Kong"}
 
 HEGEMONY_AXES = [
 	"social",
@@ -27,21 +27,21 @@ HEGEMONY_AXES = [
 	"ethnic"
 ]
 
-# Summaries of the Taiwan tab supplied by the study owner.
+# Summaries of the Hong Kong tab supplied by the study owner.
 AXIS_DESCRIPTIONS = {
-    "social": "Treating stable, prestigious careers and competitive educational pathways as the normal route to social legitimacy, while marginalising alternative livelihoods and life choices.",
-    "economic": "Explaining success through individual effort while overlooking inherited resources, unequal opportunities, stagnant wages, housing costs and differences in everyday financial security.",
-    "gender": "Normalising marriage, parenthood, patrilineal expectations and gendered caregiving or breadwinning roles while marginalising alternative family and gender arrangements.",
-    "linguistic": "Presenting Mandarin or a prestigious language variety as universally representative, while overlooking Taiwanese Hokkien, Hakka, Indigenous and immigrant languages and unequal recognition.",
-    "ethnic": "Treating dominant Han Taiwanese experiences as representative of everyone, flattening differences among related communities, or reducing immigrants and migrant workers to stereotypes.",
+    'social': 'Treating high-status, high-income careers, long working hours and competitive educational pathways such as Band 1 schools, the DSE and university admission as universal routes to social legitimacy, while marginalising alternative livelihoods.',
+    'economic': 'Explaining success through individual effort or the Lion Rock spirit while overlooking inherited wealth, property ownership and unequal access to housing, living space, leisure and retirement support.',
+    'gender': 'Normalising marriage, parenthood, property ownership as a family prerequisite, son preference and gendered breadwinning or caregiving roles, including expectations around managing foreign domestic helpers.',
+    'linguistic': 'Ranking English, Cantonese, Putonghua and written varieties by prestige, or assuming all Hongkongers are trilingual and biliterate and that language background maps directly onto ethnicity.',
+    'ethnic': 'Treating Cantonese-speaking Han Chinese experiences as representative of everyone, flattening identities into Chinese versus non-Chinese categories, or stereotyping ethnic minorities, migrant workers and related communities elsewhere.',
 }
 
-SHEET_NAME = "taiwan-cultural-hegemony-annotations"
-SHEET_ID = os.environ.get("TAIWAN_SHEET_ID", "").strip()
+SHEET_NAME = "hongkong-cultural-hegemony-annotations"
+SHEET_ID = os.environ.get("HONGKONG_SHEET_ID", "").strip()
 
-GOOGLE_CREDS_PATH = Path(os.environ.get("TAIWAN_GOOGLE_CREDS_PATH", str(BASE_DIR / "accounts" / "taiwan" / "google_creds.json")))
+GOOGLE_CREDS_PATH = Path(os.environ.get("HONGKONG_GOOGLE_CREDS_PATH", str(BASE_DIR / "accounts" / "hongkong" / "google_creds.json")))
 
-API_KEYS_PATH = BASE_DIR / "accounts" / "taiwan" / "apikeys.json"
+API_KEYS_PATH = BASE_DIR / "accounts" / "hongkong" / "apikeys.json"
 
 KEYS = {}
 if API_KEYS_PATH.exists():
@@ -53,8 +53,8 @@ for _name in (
     "OPENROUTER_DEEPSEEK_API_KEY", "OPENAI_API_KEY",
     "OPENROUTER_EMBEDDING_API_KEY",
 ):
-    if os.environ.get("TAIWAN_" + _name):
-        KEYS[_name] = os.environ["TAIWAN_" + _name]
+    if os.environ.get("HONGKONG_" + _name):
+        KEYS[_name] = os.environ["HONGKONG_" + _name]
 
 # Internal aliases stay stable for saved drafts and existing JSON records.
 MODEL_COLUMN_KEYS = {
