@@ -21,6 +21,9 @@ def _generate_groq(prompt: str, model: str, key_name: str) -> str:
             {"role": "system", "content": SYSTEM_PROMPT},
             {"role": "user", "content": prompt}
         ],
+        reasoning_effort="medium",
+        # Enable reasoning while returning only the answer for blind annotation.
+        extra_body={"include_reasoning": False},
         timeout=90
     )
 
@@ -83,6 +86,7 @@ def generate_gpt_oss_output(prompt: str) -> str:
 
 
 def generate_llama_output(prompt: str) -> str:
+    # Maverick has no reasoning switch; unsupported parameters cannot enable it.
     return _generate_openrouter(
         prompt,
         "meta-llama/llama-4-maverick",
