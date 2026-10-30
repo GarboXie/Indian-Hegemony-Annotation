@@ -48,10 +48,10 @@ class LLMReasoning(unittest.TestCase):
                 self.assertEqual(kwargs['extra_body'], {'include_reasoning': False})
                 self.assert_unchanged_constraints(kwargs)
 
-    def test_openrouter_reasoning_enabled_only_for_supported_model(self):
-        for function, model, supported in (
-            ('generate_llama_output', 'meta-llama/llama-4-maverick', False),
-            ('generate_deepseek_output', 'deepseek/deepseek-v3.2', True),
+    def test_openrouter_models_both_send_reasoning_enabled(self):
+        for function, model in (
+            ('generate_llama_output', 'meta-llama/llama-4-maverick'),
+            ('generate_deepseek_output', 'deepseek/deepseek-v3.2'),
         ):
             with self.subTest(model=model):
                 response = Mock()
@@ -64,10 +64,7 @@ class LLMReasoning(unittest.TestCase):
                 response.raise_for_status.assert_called_once()
                 payload = post.call_args.kwargs['json']
                 self.assertEqual(payload['model'], model)
-                if supported:
-                    self.assertEqual(payload['reasoning'], {'enabled': True})
-                else:
-                    self.assertNotIn('reasoning', payload)
+                self.assertEqual(payload['reasoning'], {'enabled': True})
                 self.assert_unchanged_constraints(payload)
 
 
