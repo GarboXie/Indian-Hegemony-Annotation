@@ -86,11 +86,12 @@ def generate_gpt_oss_output(prompt: str) -> str:
 
 
 def generate_llama_output(prompt: str) -> str:
-    # Maverick has no reasoning switch; unsupported parameters cannot enable it.
+    # Send the flag for request consistency; Maverick may ignore it.
     return _generate_openrouter(
         prompt,
         "meta-llama/llama-4-maverick",
-        "OPENROUTER_LLAMA_API_KEY"
+        "OPENROUTER_LLAMA_API_KEY",
+        reasoning=True
     )
 
 
