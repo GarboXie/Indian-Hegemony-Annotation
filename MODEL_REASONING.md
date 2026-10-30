@@ -6,7 +6,7 @@ The four regional branches share these generation settings (checked 2026-10-30):
 | --- | --- | --- |
 | Qwen 3.8 27B | Groq | `reasoning_effort="medium"` |
 | GPT-OSS 120B | Groq | `reasoning_effort="medium"` |
-| Llama 4 Maverick | OpenRouter | Unsupported; no reasoning parameter sent |
+| Llama 4 Maverick | OpenRouter | `reasoning={"enabled": true}` sent for request consistency; unsupported by model |
 | DeepSeek V3.2 | OpenRouter | `reasoning={"enabled": true}` |
 
 Groq uses `include_reasoning=false` to omit reasoning text from the response;
@@ -17,8 +17,11 @@ limits remain unspecified. Reasoning effort settings across different models
 do not imply equal reasoning compute or token budgets.
 
 Llama 4 Maverick's OpenRouter model catalog does not list `reasoning` among its
-supported parameters. Adding an enabled flag would not establish that reasoning
-was activated. Replacing this study model requires a separate decision.
+supported parameters. We send the enabled flag at the study owner's request for
+request consistency, but it may be ignored and does not establish that reasoning
+was activated. Live acceptance of the flag has not been verified. We do not
+silently retry without the flag. Replacing this study model requires a separate
+decision.
 
 References:
 - https://console.groq.com/docs/reasoning
