@@ -50,7 +50,7 @@ class HongKongFlow(unittest.TestCase):
             html = client.get('/').get_data(as_text=True)
             self.assertIn('Hong Kong', html)
             self.assertNotIn('qwen/qwen', html)
-            self.assertNotIn('_religious', html)
+            self.assertIn('_religious', html)
             self.assertIn('12NAq50EGfsqa4CFQ0wyQ4Q47NRfAp6H1-qw0mYvQXN8/edit?tab=t.0', html)
             for model in ['gemini', 'gpt', 'llama', 'deepseek']:
                 for kind in ['base', 'identity']:
@@ -108,9 +108,9 @@ class HongKongFlow(unittest.TestCase):
             self.assertEqual(client.post('/admin/load/'+annotation_id, data={'isAccept':'yes', 'expert_reviews':'Reviewed'}).status_code, 302)
             exported = client.get('/admin/annotations.csv')
             self.assertEqual(exported.status_code, 200)
-            self.assertNotIn('religious', exported.get_data(as_text=True))
-            self.assertEqual(config.HEGEMONY_AXES, ['social', 'economic', 'gender', 'linguistic', 'ethnic'])
-            self.assertEqual(len(config.HEADERS), 106)
+            self.assertIn('religious', exported.get_data(as_text=True))
+            self.assertEqual(config.HEGEMONY_AXES, ['social', 'economic', 'religious', 'gender', 'linguistic', 'ethnic'])
+            self.assertEqual(len(config.HEADERS), 122)
             for output in record['outputs'].values():
                 for variant in output.values():
                     self.assertEqual(list(variant['hegemony']), config.HEGEMONY_AXES)

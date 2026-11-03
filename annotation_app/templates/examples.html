@@ -111,15 +111,17 @@
                 <tr>
                   <th>{{ axis|capitalize }}</th>
                   <td>
-                    {{ model_data.base.hegemony[axis].present }}
-                    {% if model_data.base.hegemony[axis].impact %}
-                      — {{ model_data.base.hegemony[axis].impact }}
+                    {% set axis_data = model_data.base.hegemony.get(axis, {}) %}
+                    {{ axis_data.get("present", "Not assessed") }}
+                    {% if axis_data.get("impact") %}
+                      — {{ axis_data.impact }}
                     {% endif %}
                   </td>
                   <td>
-                    {{ model_data.identity.hegemony[axis].present }}
-                    {% if model_data.identity.hegemony[axis].impact %}
-                      — {{ model_data.identity.hegemony[axis].impact }}
+                    {% set axis_data = model_data.identity.hegemony.get(axis, {}) %}
+                    {{ axis_data.get("present", "Not assessed") }}
+                    {% if axis_data.get("impact") %}
+                      — {{ axis_data.impact }}
                     {% endif %}
                   </td>
                 </tr>

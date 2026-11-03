@@ -1,4 +1,4 @@
-"""Hong Kong's five-axis schema and safe new-sheet setup, without credentials."""
+"""Hong Kong's six-axis schema and safe new-sheet setup, without credentials."""
 import ast
 import unittest
 from pathlib import Path
@@ -48,16 +48,35 @@ class HongKongSchema(unittest.TestCase):
         selected_definitions(ROOT / 'storage.py', {'json_to_row'}, self.s)
         selected_definitions(ROOT / 'sheets.py', {'_row_map_to_record', '_normalize_yes_no'}, self.s)
         selected_definitions(ROOT / 'scripts/initialize_hongkong_sheet.py', {'initialize_worksheets'}, self.s)
+        selected_definitions(ROOT / 'scripts/migrate_hongkong_religious_axis.py', {'migration_requests'}, self.s)
 
-    def test_five_axes_and_eight_outputs_roundtrip(self):
+    def test_migration_keeps_existing_values_under_their_headers(self):
+        headers = self.s['HEADERS']
+        old_headers = [h for h in headers if not h.endswith(('_religious', '_religious_impact'))]
+        sheet = Sheet('testing', [old_headers])
+        sheet.id = 10
+        requests = self.s['migration_requests']([sheet], headers)
+        row = old_headers.copy()  # Distinct values make misplaced columns detectable.
+        for request in requests[:-1]:
+            columns = request['insertDimension']['range']
+            start = columns['startIndex']
+            row[start:start] = [''] * (columns['endIndex'] - start)
+        values = dict(zip(headers, row, strict=True))
+        self.assertEqual({h: v for h, v in values.items() if v}, dict(zip(old_headers, old_headers)))
+        values['id'] = 'legacy-id'
+        record = self.s['_row_map_to_record'](values)
+        exported = dict(zip(headers, self.s['json_to_row'](record), strict=True))
+        self.assertEqual(exported['qwen_base_religious'], '')
+
+    def test_six_axes_and_eight_outputs_roundtrip(self):
         s = self.s
-        self.assertEqual(s['HEGEMONY_AXES'], ['social', 'economic', 'gender', 'linguistic', 'ethnic'])
+        self.assertEqual(s['HEGEMONY_AXES'], ['social', 'economic', 'religious', 'gender', 'linguistic', 'ethnic'])
         self.assertEqual(list(s['AXIS_DESCRIPTIONS']), s['HEGEMONY_AXES'])
-        self.assertEqual(len(s['HEADERS']), 106)
-        self.assertEqual(len(set(s['HEADERS'])), 106)
+        self.assertEqual(len(s['HEADERS']), 122)
+        self.assertEqual(len(set(s['HEADERS'])), 122)
         self.assertEqual(len(s['REVIEW_HEADERS']), 15)
         self.assertFalse({'region', 'state'} & set(s['HEADERS']))
-        self.assertFalse(any('religious' in h for h in s['HEADERS']))
+        self.assertEqual(sum('religious' in h for h in s['HEADERS']), 16)
         row = {h: 'test' for h in s['HEADERS']}
         for model in ['qwen', 'gpt_oss', 'llama', 'deepseek']:
             for kind in ['base', 'identity']:
@@ -69,7 +88,7 @@ class HongKongSchema(unittest.TestCase):
         serialized = s['json_to_row'](record)
         again = s['_row_map_to_record'](dict(zip(s['HEADERS'], serialized)))
         self.assertEqual(again, record)
-        self.assertEqual(len(serialized), 106)
+        self.assertEqual(len(serialized), 122)
         for output in again['outputs'].values():
             for variant in output.values():
                 self.assertEqual(list(variant['hegemony']), s['HEGEMONY_AXES'])
@@ -78,7 +97,7 @@ class HongKongSchema(unittest.TestCase):
         sheet = Spreadsheet()
         init = self.s['initialize_worksheets']
         init(sheet, self.s['HEADERS'], self.s['REVIEW_HEADERS'])
-        self.assertEqual([len(ws.rows[0]) for ws in sheet.sheets], [106, 106, 15])
+        self.assertEqual([len(ws.rows[0]) for ws in sheet.sheets], [122, 122, 15])
         sheet.sheets[0].rows.append(['existing-hongkong-id'])
         init(sheet, self.s['HEADERS'], self.s['REVIEW_HEADERS'])
         self.assertEqual(sheet.sheets[0].rows[1], ['existing-hongkong-id'])

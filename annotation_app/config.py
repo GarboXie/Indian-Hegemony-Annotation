@@ -22,6 +22,7 @@ ONBOARDED_ANNOTATOR_USERNAMES_STATES = {"admin": "Hong Kong"}
 HEGEMONY_AXES = [
 	"social",
 	"economic",
+	"religious",
 	"gender",
 	"linguistic",
 	"ethnic"
@@ -31,6 +32,7 @@ HEGEMONY_AXES = [
 AXIS_DESCRIPTIONS = {
     'social': 'Treating high-status, high-income careers, long working hours and competitive educational pathways such as Band 1 schools, the DSE and university admission as universal routes to social legitimacy, while marginalising alternative livelihoods.',
     'economic': 'Explaining success through individual effort or the Lion Rock spirit while overlooking inherited wealth, property ownership and unequal access to housing, living space, leisure and retirement support.',
+    'religious': 'Treating one religion, set of beliefs, or religious practice as the default in Hong Kong, while marginalising other traditions or people without a religion.',
     'gender': 'Normalising marriage, parenthood, property ownership as a family prerequisite, son preference and gendered breadwinning or caregiving roles, including expectations around managing foreign domestic helpers.',
     'linguistic': 'Ranking English, Cantonese, Putonghua and written varieties by prestige, or assuming all Hongkongers are trilingual and biliterate and that language background maps directly onto ethnicity.',
     'ethnic': 'Treating Cantonese-speaking Han Chinese experiences as representative of everyone, flattening identities into Chinese versus non-Chinese categories, or stereotyping ethnic minorities, migrant workers and related communities elsewhere.',
@@ -71,7 +73,7 @@ NEUTRAL_MODEL_COLUMN_KEYS = {
     "deepseek": "model4",
 }
 
-# Public columns use actual model names; all five axes come from one definition.
+# Public columns use actual model names; axes come from one definition.
 HEADERS = ["id", "timestamp", "annotator_name", "base_prompt", "identity_prompt"]
 for _model in MODEL_COLUMN_KEYS.values():
     for _kind in ("base", "identity"):

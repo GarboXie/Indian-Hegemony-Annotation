@@ -39,7 +39,7 @@ def _ensure_sheet_headers(worksheet, headers):
         return
 
     if existing_headers:
-        raise ValueError("Unexpected Hong Kong sheet headers. Use a dedicated Hong Kong spreadsheet initialized with scripts/initialize_hongkong_sheet.py.")
+        raise ValueError("Unexpected Hong Kong sheet headers. Check scripts/migrate_hongkong_religious_axis.py for an existing five-axis spreadsheet.")
 
     worksheet.resize(cols=max(worksheet.col_count, len(headers)))
     worksheet.update(
@@ -86,7 +86,10 @@ def _row_map_to_record(row_map: dict) -> dict:
             hegemony = {}
 
             for axis in HEGEMONY_AXES:
-                present = _normalize_yes_no(row_map.get(f"{prefix}_{axis}", "no"))
+                value = row_map.get(f"{prefix}_{axis}", "")
+                if axis == "religious" and not str(value).strip():
+                    continue  # Older records were not assessed on this axis.
+                present = _normalize_yes_no(value)
                 impact = row_map.get(f"{prefix}_{axis}_impact", "")
                 if present == "no":
                     impact = ""

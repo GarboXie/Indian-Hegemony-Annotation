@@ -334,8 +334,9 @@
                         {% for axis in hegemony_axes %}
                         <tr>
                           <td>{{ axis|capitalize }}</td>
-                          <td>{{ record.outputs[model_key][kind].hegemony[axis].present }}</td>
-                          <td>{{ record.outputs[model_key][kind].hegemony[axis].impact or "—" }}</td>
+                          {% set axis_data = record.outputs[model_key][kind].hegemony.get(axis, {}) %}
+                          <td>{{ axis_data.get("present", "Not assessed") }}</td>
+                          <td>{{ axis_data.get("impact") or "—" }}</td>
                         </tr>
                         {% endfor %}
                       </tbody>

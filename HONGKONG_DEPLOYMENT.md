@@ -7,7 +7,7 @@ files, account lists, draft directories, databases or embedding indexes.
 
 ## Study configuration
 
-Five axes, in this order: social, economic, gender, linguistic, ethnic.
+Six axes, in this order: social, economic, religious, gender, linguistic, ethnic.
 Source and Annotation Guidelines (Hong Kong Tab 1):
 https://docs.google.com/document/d/12NAq50EGfsqa4CFQ0wyQ4Q47NRfAp6H1-qw0mYvQXN8/edit?tab=t.0
 
@@ -15,7 +15,7 @@ The four generation models and their blinded webpage labels are inherited from
 the tested Singapore portal: Qwen (Model 1), GPT-OSS (Model 2), Llama Maverick
 (Model 3), DeepSeek (Model 4). Full backend identifiers remain in JSON records.
 Sheets/CSV prefixes are qwen, gpt_oss, llama, deepseek. Base and Identity remain
-separate. There are 106 annotation columns and 15 legacy review-export columns,
+separate. There are 122 annotation columns and 15 legacy review-export columns,
 without region/state. Internal location fields are fixed compatibility values.
 Peer IAA review uses a dedicated Hong Kong SQLite database. Assignment lists start
 empty until Hong Kong annotators are onboarded. No previous campaign data is loaded.
@@ -65,7 +65,21 @@ python annotation_app/scripts/initialize_hongkong_sheet.py
 
 The helper preflights all existing target sheets, creates testing/testing2/testreview
 if absent, and initializes only empty sheets. It rejects unexpected headers or
-data instead of migrating another campaign's schema. Expected counts: 106/106/15.
+data instead of migrating another campaign's schema. Expected counts: 122/122/15.
+
+For an existing five-axis Hong Kong deployment, pause annotation submissions
+while updating. From the repository root, activate the web app's virtualenv and
+export its existing `HONGKONG_SHEET_ID`. Run the migration in check mode first,
+then apply it and reload the app:
+
+```bash
+python annotation_app/scripts/migrate_hongkong_religious_axis.py
+python annotation_app/scripts/migrate_hongkong_religious_axis.py --apply
+```
+
+The migration inserts blank columns for historical Religious Hegemony
+assessments in `testing` and `testing2`. It preserves existing cells and leaves
+`testreview` at 15 columns.
 
 ## PythonAnywhere
 
@@ -106,6 +120,6 @@ python -B tests/test_hongkong.py
 ```
 
 Before launch, verify real API generation, service-account permissions, signup,
-all eight Base/Identity outputs, five axes, draft saving, confirmation, expert
+all eight Base/Identity outputs, six axes, draft saving, confirmation, expert
 review, CSV export, guide access and a same-prompt similarity match in a new record.
 Local mocked checks do not establish real provider access or online deployment.

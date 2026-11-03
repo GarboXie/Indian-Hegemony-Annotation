@@ -221,7 +221,7 @@ def json_to_row(record):
         # 3️⃣ hegemony axes
         for axis in HEGEMONY_AXES:
             axis_data = block["hegemony"].get(axis, {})
-            row.append(axis_data.get("present", "no"))
+            row.append(axis_data.get("present", "" if axis == "religious" else "no"))
             row.append(axis_data.get("impact", ""))
 
     # ========= GEMINI =========
