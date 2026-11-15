@@ -12,16 +12,19 @@ def migration_requests(worksheets, headers):
     requests = []
     for worksheet in worksheets:
         actual = worksheet.row_values(1)
-        if actual == headers + ['ground_truth_native', 'second_prompt_type']:
+        if actual[-2:] == ['ground_truth_native', 'second_prompt_type'] and [
+            h.replace('identity', 'native', 1) for h in actual[:-2]
+        ] == headers:
             continue
-        if actual not in (previous, headers):
+        normalized = [h.replace("identity", "native", 1) for h in actual]
+        if normalized not in (previous, headers):
             raise ValueError(f'{worksheet.title}: unexpected headers; no changes made.')
         print(f'{worksheet.title}: {len(actual)} -> {len(headers)} columns')
         if actual == headers:
             continue
 
         # Insert from right to left so earlier column indices stay valid.
-        for header in reversed(added[::2]):
+        for header in reversed(added[::2] if normalized == previous else []):
             index = sum(item not in added for item in headers[:headers.index(header)])
             requests.append({'insertDimension': {'range': {
                 'sheetId': worksheet.id, 'dimension': 'COLUMNS',
@@ -51,7 +54,9 @@ def main():
     if requests:
         spreadsheet.batch_update({'requests': requests})
     for worksheet in worksheets:
-        if worksheet.row_values(1) not in (HEADERS[:-2], HEADERS):
+        actual = worksheet.row_values(1)
+        normalized = [h.replace('identity', 'native', 1) for h in actual]
+        if normalized not in (HEADERS[:-2], HEADERS):
             raise RuntimeError(f'{worksheet.title}: header verification failed.')
     print('Verified both annotation worksheets; religious columns are ready.')
 
