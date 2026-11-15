@@ -60,7 +60,7 @@ class TaiwanSchema(unittest.TestCase):
         self.assertFalse(any('religious' in h for h in s['HEADERS']))
         row = {h: 'test' for h in s['HEADERS']}
         for model in ['qwen', 'gpt_oss', 'llama', 'deepseek']:
-            for kind in ['base', 'identity']:
+            for kind in ['base', 'native']:
                 for axis in s['HEGEMONY_AXES']:
                     row[f'{model}_{kind}_{axis}'] = 'yes'
         record = s['_row_map_to_record'](row)

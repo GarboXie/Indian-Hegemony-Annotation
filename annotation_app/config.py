@@ -72,9 +72,9 @@ NEUTRAL_MODEL_COLUMN_KEYS = {
 }
 
 # Public columns use actual model names; all five axes come from one definition.
-HEADERS = ["id", "timestamp", "annotator_name", "base_prompt", "identity_prompt"]
+HEADERS = ["id", "timestamp", "annotator_name", "base_prompt", "native_prompt"]
 for _model in MODEL_COLUMN_KEYS.values():
-    for _kind in ("base", "identity"):
+    for _kind in ("base", "native"):
         _prefix = f"{_model}_{_kind}"
         HEADERS.extend([f"{_prefix}_output", f"{_prefix}_hallucination"])
         for _axis in HEGEMONY_AXES:
@@ -83,7 +83,7 @@ HEADERS.extend(["ground_truth", "references", "expert_reviews", "isAccept", "ann
 
 REVIEW_HEADERS = [
     "review_id", "annotation_id", "reviewer_username", "model", "prompt_type",
-    "Q1_prompt_format", "Q2_prompt_context_valid", "Q3_identity_relevance_format",
+    "Q1_prompt_format", "Q2_prompt_context_valid", "Q3_native_relevance_format",
     "Q4_hegemony_present", "Q5_axes_correct", "Q6_impact_correct", "Q7_severity",
     "ground_truth_rating", "needs_adjudication", "timestamp",
 ]
