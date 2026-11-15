@@ -10,6 +10,9 @@ def definitions(filename, names, scope):
     tree = ast.parse((ROOT / filename).read_text(encoding='utf-8'))
     nodes = [n for n in tree.body if (
         isinstance(n, ast.FunctionDef) and n.name in names
+        or isinstance(n, ast.Expr) and isinstance(n.value, ast.Call)
+        and isinstance(n.value.func, ast.Attribute) and isinstance(n.value.func.value, ast.Name)
+        and n.value.func.value.id == 'HEADERS' and 'HEADERS' in names
         or isinstance(n, ast.Assign) and any(isinstance(t, ast.Name) and t.id in names for t in n.targets)
     )]
     exec(compile(ast.Module(body=nodes, type_ignores=[]), filename, 'exec'), scope)
@@ -46,8 +49,8 @@ class SheetColumns(unittest.TestCase):
         s = self.s
         old_row, expected = self.record()
         serialized = s['json_to_row'](expected)
-        self.assertEqual(len(serialized), 122)
-        self.assertEqual(len(set(s['HEADERS'])), 122)
+        self.assertEqual(len(serialized), 124)
+        self.assertEqual(len(set(s['HEADERS'])), 124)
         self.assertEqual(s['HEADERS'][3:5], ['base_prompt', 'identity_prompt'])
         for prefix in ['qwen', 'gpt_oss', 'llama', 'deepseek']:
             self.assertIn(prefix + '_base_output', s['HEADERS'])
@@ -62,8 +65,8 @@ class SheetColumns(unittest.TestCase):
 
     def test_atomic_requests_preserve_cells(self):
         s = self.s
-        for old, new in [(s['LEGACY_HEADERS'], s['HEADERS']),
-                         (s['NEUTRAL_HEADERS'], s['HEADERS']),
+        for old, new in [(s['LEGACY_HEADERS'], s['HEADERS'][:-2]),
+                         (s['NEUTRAL_HEADERS'], s['HEADERS'][:-2]),
                          (s['LEGACY_REVIEW_HEADERS'], s['REVIEW_HEADERS'])]:
             data = [f'value-{i}' for i in range(len(old))]
             rows = [list(old), list(data), ['short'] + [''] * (len(old) - 1)]

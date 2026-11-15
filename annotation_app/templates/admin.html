@@ -602,7 +602,7 @@
                 <td>
                   <div class="prompt-preview" title="{{ r.prompts.base }}">{{ r.prompts.base }}</div>
                   <details class="prompt-details">
-                    <summary>Show Identity-Primed Prompt</summary>
+                    <summary>Show {{ "Native Prompt" if r.second_prompt_type == "native" else "Identity-Primed Prompt" }}</summary>
                     <div class="prompt-detail-body" title="{{ r.prompts.identity }}">{{ r.prompts.identity }}</div>
                   </details>
                 </td>

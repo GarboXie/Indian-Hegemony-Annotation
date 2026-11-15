@@ -50,10 +50,11 @@
 async function generateOutput(model, kind) {
 
   // 1. Read the correct prompt
+  const secondPrompt = document.getElementById("second_prompt_input");
   const prompt =
     kind === "base"
       ? document.querySelector("textarea[name='base_prompt']").value
-      : document.querySelector("textarea[name='identity_primed_prompt']").value;
+      : secondPrompt.value;
 
   if (!prompt.trim()) {
     alert("Prompt is empty");
@@ -90,7 +91,7 @@ async function generateOutput(model, kind) {
     const response = await fetch(`/generate/${model}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt })
+      body: JSON.stringify({ prompt, native: kind !== "base" && secondPrompt.name === "native_prompt" })
     });
 
     const data = await response.json();
@@ -132,22 +133,6 @@ function renderAllOutputPreviews() {
   });
 }
 
-function autofillIdentityPrompt() {
-  const basePromptBox = document.getElementById("base_prompt_input");
-  const identityPromptBox = document.getElementById("identity_prompt_input");
-
-  const basePrompt = basePromptBox ? basePromptBox.value.trim() : "";
-  if (!basePrompt) {
-    alert("Please enter Base Prompt first.");
-    return;
-  }
-  if (!identityPromptBox) {
-    alert("Identity prompt field not found.");
-    return;
-  }
-
-  identityPromptBox.value = `As <place relevant identity here>, ${basePrompt}`;
-}
 </script>
 
 

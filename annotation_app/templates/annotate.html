@@ -223,19 +223,13 @@
                 </div>
 
                 <div class="column">
-                  <label class="label">Identity-Primed Prompt</label>
+                  {% set legacy_identity = draft and draft.second_prompt_type|default("") != "native" %}
+                  <label class="label" for="second_prompt_input">{{ "Identity-Primed Prompt" if legacy_identity else "Native Prompt" }}</label>
                   <textarea class="textarea"
-                            id="identity_prompt_input"
-                            name="identity_primed_prompt"
+                            id="second_prompt_input"
+                            name="{{ 'identity_primed_prompt' if legacy_identity else 'native_prompt' }}"
                             rows="3"
                             required>{{ draft.prompts.identity if draft }}</textarea>
-                  <div class="field mt-3">
-                    <button type="button"
-                            class="button is-light"
-                            onclick="autofillIdentityPrompt()">
-                      Auto-fill Identity Prompt
-                    </button>
-                  </div>
                 </div>
               </div>
 
@@ -266,7 +260,8 @@
                   <div class="column">
                     <div class="card">
                       <div class="card-content">
-                        <button id="{{ m }}_generate_btn"
+                        <h3 class="title is-6">{{ "Base Output" if kind == "base" else ("Identity-Primed Output" if legacy_identity else "Native Output") }}</h3>
+                        <button id="{{ m.js }}_{{ kind }}_generate_btn"
                                 type="button"
                                 class="button is-dark mb-3"
                                 onclick="generateOutput('{{ m.js }}','{{ kind }}')">
@@ -315,12 +310,21 @@
           <div class="card mb-5">
             <div class="card-content">
               <div class="field">
-                <label class="label">Ground Truth (100–200 words)</label>
+                <label class="label" for="ground_truth_english">{{ "Ground Truth" if legacy_identity else "Ground Truth (English)" }} (100–200 words)</label>
                 <textarea class="textarea"
+                          id="ground_truth_english"
                           name="ground_truth"
+                          {% if not legacy_identity %}required{% endif %}
                           rows="15"
                           >{{ draft.ground_truth if draft }}</textarea>
               </div>
+              {% if not legacy_identity %}
+              <div class="field">
+                <label class="label" for="ground_truth_native">Ground Truth (Native)</label>
+                <textarea class="textarea" id="ground_truth_native" name="ground_truth_native"
+                          rows="15" required>{{ draft.ground_truth_native|default("") if draft }}</textarea>
+              </div>
+              {% endif %}
             </div>
           </div>
 

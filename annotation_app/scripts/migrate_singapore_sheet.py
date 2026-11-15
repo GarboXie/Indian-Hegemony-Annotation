@@ -37,15 +37,19 @@ def main():
 
     spreadsheet = _open_study_sheet()
     targets = [
-        ('testing', HEADERS, (LEGACY_HEADERS, NEUTRAL_HEADERS, HEADERS)),
-        ('testing2', HEADERS, (LEGACY_HEADERS, NEUTRAL_HEADERS, HEADERS)),
+        ('testing', HEADERS[:-2], (LEGACY_HEADERS, NEUTRAL_HEADERS, HEADERS[:-2], HEADERS)),
+        ('testing2', HEADERS[:-2], (LEGACY_HEADERS, NEUTRAL_HEADERS, HEADERS[:-2], HEADERS)),
         ('testreview', REVIEW_HEADERS, (LEGACY_REVIEW_HEADERS, REVIEW_HEADERS)),
     ]
     snapshots, requests, expected_rows = {}, [], {}
+    verified_targets = {}
     for name, target, allowed in targets:
         ws = spreadsheet.worksheet(name)
         values = ws.get_all_values()
         old = values[0] if values else []
+        if old == HEADERS:
+            target = HEADERS
+        verified_targets[name] = target
         if old not in allowed:
             raise ValueError(f'{name}: unrecognized headers; no changes made.')
         if any(len(row) > len(old) for row in values):
@@ -75,7 +79,7 @@ def main():
     backup.write_text(json.dumps({'spreadsheet_id': spreadsheet.id, 'worksheets': snapshots}, ensure_ascii=False), encoding='utf-8')
     # All three worksheets change in one Google Sheets atomic batch request.
     spreadsheet.batch_update({'requests': requests})
-    for name, target, _ in targets:
+    for name, target in verified_targets.items():
         values = spreadsheet.worksheet(name).get_all_values()
         if not values or values[0] != target:
             raise RuntimeError(f'{name}: header verification failed. Backup: {backup}')
