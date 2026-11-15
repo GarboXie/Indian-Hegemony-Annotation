@@ -53,8 +53,8 @@ class TaiwanSchema(unittest.TestCase):
         s = self.s
         self.assertEqual(s['HEGEMONY_AXES'], ['social', 'economic', 'gender', 'linguistic', 'ethnic'])
         self.assertEqual(list(s['AXIS_DESCRIPTIONS']), s['HEGEMONY_AXES'])
-        self.assertEqual(len(s['HEADERS']), 106)
-        self.assertEqual(len(set(s['HEADERS'])), 106)
+        self.assertEqual(len(s['HEADERS']), 108)
+        self.assertEqual(len(set(s['HEADERS'])), 108)
         self.assertEqual(len(s['REVIEW_HEADERS']), 15)
         self.assertFalse({'region', 'state'} & set(s['HEADERS']))
         self.assertFalse(any('religious' in h for h in s['HEADERS']))
@@ -69,7 +69,7 @@ class TaiwanSchema(unittest.TestCase):
         serialized = s['json_to_row'](record)
         again = s['_row_map_to_record'](dict(zip(s['HEADERS'], serialized)))
         self.assertEqual(again, record)
-        self.assertEqual(len(serialized), 106)
+        self.assertEqual(len(serialized), 108)
         for output in again['outputs'].values():
             for variant in output.values():
                 self.assertEqual(list(variant['hegemony']), s['HEGEMONY_AXES'])
@@ -78,7 +78,7 @@ class TaiwanSchema(unittest.TestCase):
         sheet = Spreadsheet()
         init = self.s['initialize_worksheets']
         init(sheet, self.s['HEADERS'], self.s['REVIEW_HEADERS'])
-        self.assertEqual([len(ws.rows[0]) for ws in sheet.sheets], [106, 106, 15])
+        self.assertEqual([len(ws.rows[0]) for ws in sheet.sheets], [108, 108, 15])
         sheet.sheets[0].rows.append(['existing-taiwan-id'])
         init(sheet, self.s['HEADERS'], self.s['REVIEW_HEADERS'])
         self.assertEqual(sheet.sheets[0].rows[1], ['existing-taiwan-id'])

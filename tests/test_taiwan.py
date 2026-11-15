@@ -73,26 +73,34 @@ class TaiwanFlow(unittest.TestCase):
                 self.assertTrue(checked.json['near_duplicate'])
                 self.assertEqual(finder.call_args.kwargs['state'], 'Taiwan')
                 self.assertEqual(finder.call_args.kwargs['exclude_annotation_id'], 'self')
-            form = dict(annotator_name='test-user', base_prompt='Base test', identity_primed_prompt='Identity test', ground_truth='Ground truth')
+            form = dict(annotator_name='test-user', base_prompt='Base test', native_prompt='本地語言提示', ground_truth='Ground truth', ground_truth_native='本地語言答案')
             for model, function in [('gemini','generate_qwen_output'), ('gpt','generate_gpt_oss_output'),
                                     ('llama','generate_llama_output'), ('deepseek','generate_deepseek_output')]:
                 with patch.object(app, function, return_value='Mock response') as mocked:
                     for kind in ['base','identity']:
-                        response = client.post('/generate/'+model, json={'prompt':kind+' test'})
+                        response = client.post('/generate/'+model, json={'prompt': kind+' test', 'native': kind == 'identity'})
                         self.assertEqual(response.json, {'text':'Mock response'})
                         form[f'{model}_{kind}_output'] = response.json['text']
                         for axis in config.HEGEMONY_AXES:
                             form[f'{model}_{kind}_{axis}_hegemony'] = 'yes'
                             form[f'{model}_{kind}_{axis}_impact'] = axis+' impact'
                     self.assertEqual(mocked.call_count, 2)
+                    mocked.assert_called_with('identity test', native=True)
             saved = client.post('/save-annotation-draft', data=form)
             self.assertEqual(saved.status_code, 200)
             annotation_id = saved.json['annotation_id']
             self.assertEqual(len(storage.load_records()), 1)
-            self.assertEqual(client.post('/', data=form).status_code, 200)
+            self.assertEqual(client.post('/', data={**form, 'ground_truth_native': ''}).status_code, 400)
+            review = client.post('/', data=form)
+            self.assertEqual(review.status_code, 200)
+            self.assertIn('Native Prompt', review.get_data(as_text=True))
+            self.assertIn('本地語言答案', review.get_data(as_text=True))
             self.assertEqual(client.post('/confirm').status_code, 302)
             self.assertEqual(len(storage.load_records()), 1)
             record = storage.load_records()[0]
+            self.assertEqual(record['second_prompt_type'], 'native')
+            self.assertEqual(record['prompts']['identity'], '本地語言提示')
+            self.assertEqual(record['ground_truth_native'], '本地語言答案')
             self.assertEqual(len(storage.json_to_row(record)), len(config.HEADERS))
             self.assertEqual(record['state'], 'Taiwan')
             notes_store.save_note('test-user', 'Test note', 'Taiwan')
@@ -109,7 +117,7 @@ class TaiwanFlow(unittest.TestCase):
             self.assertEqual(exported.status_code, 200)
             self.assertNotIn('religious', exported.get_data(as_text=True))
             self.assertEqual(config.HEGEMONY_AXES, ['social', 'economic', 'gender', 'linguistic', 'ethnic'])
-            self.assertEqual(len(config.HEADERS), 106)
+            self.assertEqual(len(config.HEADERS), 108)
             for output in record['outputs'].values():
                 for variant in output.values():
                     self.assertEqual(list(variant['hegemony']), config.HEGEMONY_AXES)

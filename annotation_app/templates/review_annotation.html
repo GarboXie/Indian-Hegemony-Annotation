@@ -273,7 +273,7 @@
               <pre class="wrapped-pre">{{ record.prompts.base }}</pre>
             </div>
             <div class="column">
-              <h3 class="title is-6 mb-2">Identity-Primed Prompt</h3>
+              <h3 class="title is-6 mb-2">{{ "Native Prompt" if record.second_prompt_type == "native" else "Identity-Primed Prompt" }}</h3>
               <pre class="wrapped-pre">{{ record.prompts.identity }}</pre>
             </div>
           </div>
@@ -286,7 +286,7 @@
             </div>
 
             <div class="field review-question-block">
-              <label class="label reviewer-question">Q2. The identity used in the identity-primed prompt is appropriate, relevant, and follows the guideline format.</label>
+              <label class="label reviewer-question">Q2. {% if record.second_prompt_type == "native" %}The native prompt uses an appropriate language, preserves the meaning of the base prompt, and follows the guideline format.{% else %}The identity used in the identity-primed prompt is appropriate, relevant, and follows the guideline format.{% endif %}</label>
               {{ render_scale("prompt_q1", selected_answers, quality_scale_options) }}
               {{ render_comment_box("prompt_q1_comment", selected_answers) }}
             </div>
@@ -317,7 +317,7 @@
             <div class="column">
               <div class="card">
                 <div class="card-content">
-                  <h3 class="title is-6 mb-3">{{ kind|capitalize }} Output</h3>
+                  <h3 class="title is-6 mb-3">{{ "Native" if kind == "identity" and record.second_prompt_type == "native" else kind|capitalize }} Output</h3>
                   <div class="markdown-output is-compact" data-markdown-static>{{- record.outputs[model_key][kind].text -}}</div>
 
                   <div class="axis-table-wrap">
@@ -372,12 +372,16 @@
 
       <div class="card mb-5">
         <div class="card-content">
-          <h2 class="title is-5">Ground Truth</h2>
+          <h2 class="title is-5">Ground Truth{% if record.second_prompt_type == "native" %} (English){% endif %}</h2>
           <pre class="wrapped-pre">{{ record.ground_truth }}</pre>
+          {% if record.second_prompt_type == "native" %}
+          <p class="has-text-weight-semibold mt-3">Ground Truth (Native)</p>
+          <pre class="wrapped-pre">{{ record.ground_truth_native|default("") }}</pre>
+          {% endif %}
 
           <div class="reviewer-panel">
             <div class="field mt-4 review-question-block">
-              <label class="label reviewer-question">Q1. The ground truth response meaningfully corrects the hegemonic framing while remaining culturally accurate and contextually appropriate.</label>
+              <label class="label reviewer-question">Q1. {% if record.second_prompt_type == "native" %}The English and native ground truth responses meaningfully correct the hegemonic framing while remaining culturally accurate and contextually appropriate.{% else %}The ground truth response meaningfully corrects the hegemonic framing while remaining culturally accurate and contextually appropriate.{% endif %}</label>
               {{ render_scale("ground_truth_rating", selected_answers, quality_scale_options) }}
               {{ render_comment_box("ground_truth_rating_comment", selected_answers) }}
             </div>
