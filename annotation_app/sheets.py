@@ -30,7 +30,7 @@ REVIEW_HEADERS = [
     "prompt_type",
     "Q1_prompt_format",
     "Q2_prompt_context_valid",
-    "Q3_identity_relevance_format",
+    "Q3_native_relevance_format",
     "Q4_hegemony_present",
     "Q5_axes_correct",
     "Q6_impact_correct",
@@ -49,14 +49,14 @@ def _ensure_sheet_headers(worksheet, headers):
     if existing_headers == headers:
         return
 
-    if headers == HEADERS and existing_headers == headers[:-2]:
-        worksheet.resize(cols=max(worksheet.col_count, len(headers)))
-        worksheet.update(
-            gspread.utils.rowcol_to_a1(1, len(existing_headers) + 1),
-            [headers[-2:]],
-            value_input_option="RAW",
-        )
-        return
+    # The previous schema used the same column positions with Identity labels.
+    identity_headers = [header.replace("native", "identity", 1)
+                        if header != "ground_truth_native" else header for header in headers]
+    accepted = [identity_headers]
+    if headers == HEADERS:
+        accepted.extend([headers[:-2], identity_headers[:-2]])
+    if existing_headers and existing_headers not in accepted:
+        raise ValueError(f"{worksheet.title}: unexpected sheet headers; no columns renamed.")
 
     worksheet.resize(cols=max(worksheet.col_count, len(headers)))
     worksheet.update(
@@ -71,6 +71,12 @@ def _normalize_yes_no(value: str) -> str:
 
 
 def _row_map_to_record(row_map: dict) -> dict:
+    # Internally, the second output slot retains its name for existing drafts/reviews.
+    row_map = {
+        key.replace("_native_", "_identity_"): value for key, value in row_map.items()
+    }
+    if "native_prompt" in row_map:
+        row_map["identity_prompt"] = row_map["native_prompt"]
     record = {
         "id": str(row_map.get("id", "")).strip(),
         "timestamp": row_map.get("timestamp", ""),
@@ -158,10 +164,7 @@ def _get_or_create_review_worksheet():
         worksheet.update("A1", [REVIEW_HEADERS], value_input_option="RAW")
         return worksheet
 
-    header_values = worksheet.row_values(1)
-    if header_values != REVIEW_HEADERS:
-        worksheet.resize(cols=max(worksheet.col_count, len(REVIEW_HEADERS)))
-        worksheet.update("A1", [REVIEW_HEADERS], value_input_option="RAW")
+    _ensure_sheet_headers(worksheet, REVIEW_HEADERS)
 
     return worksheet
 
