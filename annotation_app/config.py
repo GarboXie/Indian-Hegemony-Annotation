@@ -89,3 +89,6 @@ REVIEW_HEADERS = [
     "Q4_hegemony_present", "Q5_axes_correct", "Q6_impact_correct", "Q7_severity",
     "ground_truth_rating", "needs_adjudication", "timestamp",
 ]
+
+# Keep earlier worksheet columns in place for historical annotations.
+HEADERS.extend(["ground_truth_native", "second_prompt_type"])

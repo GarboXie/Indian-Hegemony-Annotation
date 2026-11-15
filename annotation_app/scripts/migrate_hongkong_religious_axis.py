@@ -12,6 +12,8 @@ def migration_requests(worksheets, headers):
     requests = []
     for worksheet in worksheets:
         actual = worksheet.row_values(1)
+        if actual == headers + ['ground_truth_native', 'second_prompt_type']:
+            continue
         if actual not in (previous, headers):
             raise ValueError(f'{worksheet.title}: unexpected headers; no changes made.')
         print(f'{worksheet.title}: {len(actual)} -> {len(headers)} columns')
@@ -42,14 +44,14 @@ def main():
 
     spreadsheet = _open_study_sheet()
     worksheets = [spreadsheet.worksheet(name) for name in (MAIN_SHEET, BACKUP_SHEET)]
-    requests = migration_requests(worksheets, HEADERS)
+    requests = migration_requests(worksheets, HEADERS[:-2])
     if not args.apply:
         print('CHECK ONLY: no spreadsheet changes made.')
         return
     if requests:
         spreadsheet.batch_update({'requests': requests})
     for worksheet in worksheets:
-        if worksheet.row_values(1) != HEADERS:
+        if worksheet.row_values(1) not in (HEADERS[:-2], HEADERS):
             raise RuntimeError(f'{worksheet.title}: header verification failed.')
     print('Verified both annotation worksheets; religious columns are ready.')
 

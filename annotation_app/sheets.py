@@ -38,6 +38,15 @@ def _ensure_sheet_headers(worksheet, headers):
     if existing_headers == headers:
         return
 
+    if headers == HEADERS and existing_headers == headers[:-2]:
+        worksheet.resize(cols=max(worksheet.col_count, len(headers)))
+        worksheet.update(
+            gspread.utils.rowcol_to_a1(1, len(existing_headers) + 1),
+            [headers[-2:]],
+            value_input_option="RAW",
+        )
+        return
+
     if existing_headers:
         raise ValueError("Unexpected Hong Kong sheet headers. Check scripts/migrate_hongkong_religious_axis.py for an existing five-axis spreadsheet.")
 
@@ -73,6 +82,8 @@ def _row_map_to_record(row_map: dict) -> dict:
         },
         "outputs": {},
         "ground_truth": row_map.get("ground_truth", ""),
+        "ground_truth_native": row_map.get("ground_truth_native", ""),
+        "second_prompt_type": row_map.get("second_prompt_type", ""),
         "references": row_map.get("references", ""),
         "expert_reviews": row_map.get("expert_reviews", ""),
         "isAccept": row_map.get("isAccept", ""),

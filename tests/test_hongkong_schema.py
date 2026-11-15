@@ -51,7 +51,7 @@ class HongKongSchema(unittest.TestCase):
         selected_definitions(ROOT / 'scripts/migrate_hongkong_religious_axis.py', {'migration_requests'}, self.s)
 
     def test_migration_keeps_existing_values_under_their_headers(self):
-        headers = self.s['HEADERS']
+        headers = self.s['HEADERS'][:-2]
         old_headers = [h for h in headers if not h.endswith(('_religious', '_religious_impact'))]
         sheet = Sheet('testing', [old_headers])
         sheet.id = 10
@@ -65,15 +65,15 @@ class HongKongSchema(unittest.TestCase):
         self.assertEqual({h: v for h, v in values.items() if v}, dict(zip(old_headers, old_headers)))
         values['id'] = 'legacy-id'
         record = self.s['_row_map_to_record'](values)
-        exported = dict(zip(headers, self.s['json_to_row'](record), strict=True))
+        exported = dict(zip(self.s['HEADERS'], self.s['json_to_row'](record), strict=True))
         self.assertEqual(exported['qwen_base_religious'], '')
 
     def test_six_axes_and_eight_outputs_roundtrip(self):
         s = self.s
         self.assertEqual(s['HEGEMONY_AXES'], ['social', 'economic', 'religious', 'gender', 'linguistic', 'ethnic'])
         self.assertEqual(list(s['AXIS_DESCRIPTIONS']), s['HEGEMONY_AXES'])
-        self.assertEqual(len(s['HEADERS']), 122)
-        self.assertEqual(len(set(s['HEADERS'])), 122)
+        self.assertEqual(len(s['HEADERS']), 124)
+        self.assertEqual(len(set(s['HEADERS'])), 124)
         self.assertEqual(len(s['REVIEW_HEADERS']), 15)
         self.assertFalse({'region', 'state'} & set(s['HEADERS']))
         self.assertEqual(sum('religious' in h for h in s['HEADERS']), 16)
@@ -88,7 +88,7 @@ class HongKongSchema(unittest.TestCase):
         serialized = s['json_to_row'](record)
         again = s['_row_map_to_record'](dict(zip(s['HEADERS'], serialized)))
         self.assertEqual(again, record)
-        self.assertEqual(len(serialized), 122)
+        self.assertEqual(len(serialized), 124)
         for output in again['outputs'].values():
             for variant in output.values():
                 self.assertEqual(list(variant['hegemony']), s['HEGEMONY_AXES'])
@@ -97,7 +97,7 @@ class HongKongSchema(unittest.TestCase):
         sheet = Spreadsheet()
         init = self.s['initialize_worksheets']
         init(sheet, self.s['HEADERS'], self.s['REVIEW_HEADERS'])
-        self.assertEqual([len(ws.rows[0]) for ws in sheet.sheets], [122, 122, 15])
+        self.assertEqual([len(ws.rows[0]) for ws in sheet.sheets], [124, 124, 15])
         sheet.sheets[0].rows.append(['existing-hongkong-id'])
         init(sheet, self.s['HEADERS'], self.s['REVIEW_HEADERS'])
         self.assertEqual(sheet.sheets[0].rows[1], ['existing-hongkong-id'])
