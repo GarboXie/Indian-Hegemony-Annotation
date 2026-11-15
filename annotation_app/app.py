@@ -943,6 +943,8 @@ def _is_annotation_completed(record):
 
     if not _has_text(record.get("ground_truth")):
         return False
+    if record.get("second_prompt_type") == "native" and not _has_text(record.get("ground_truth_native")):
+        return False
 
     outputs = record.get("outputs") or {}
     for model in ["gemini", "gpt", "llama", "deepseek"]:
@@ -959,6 +961,11 @@ def annotate():
 
     if request.method == "POST":
         record = build_record(request.form)
+
+        if record.get("second_prompt_type") == "native" and not all(
+            _has_text(record.get(field)) for field in ("ground_truth", "ground_truth_native")
+        ):
+            abort(400, description="Enter both English and Native Ground Truth before submitting.")
 
         draft_id = save_draft(record)
         session["draft_id"] = draft_id
@@ -1269,7 +1276,9 @@ def examples():
                 if not _has_text(text):
                     return False
 
-        return _has_text(record.get("ground_truth"))
+        return _has_text(record.get("ground_truth")) and (
+            record.get("second_prompt_type") != "native" or _has_text(record.get("ground_truth_native"))
+        )
 
     try:
         records = load_records_from_sheet()
@@ -1302,6 +1311,8 @@ def examples():
             "prompts": r.get("prompts", {}),
             "outputs": r.get("outputs", {}),
             "ground_truth": r.get("ground_truth", ""),
+            "ground_truth_native": r.get("ground_truth_native", ""),
+            "second_prompt_type": r.get("second_prompt_type", ""),
             "references": r.get("references", ""),
             "expert_reviews": r.get("expert_reviews", ""),
             "isAccept": r.get("isAccept", ""),
@@ -1721,6 +1732,8 @@ def generate_qwen():
     if not prompt:
         return jsonify({"error": "Empty prompt"}), 400
 
+    if data.get("native") is True:
+        return jsonify({"text": generate_qwen_output(prompt, native=True)})
     return jsonify({"text": generate_qwen_output(prompt)})
 
 
@@ -1734,6 +1747,8 @@ def generate_gpt_oss():
     if not prompt:
         return jsonify({"error": "Empty prompt"}), 400
 
+    if data.get("native") is True:
+        return jsonify({"text": generate_gpt_oss_output(prompt, native=True)})
     return jsonify({"text": generate_gpt_oss_output(prompt)})
 
 
@@ -1747,6 +1762,8 @@ def generate_llama():
     if not prompt:
         return jsonify({"error": "Empty prompt"}), 400
 
+    if data.get("native") is True:
+        return jsonify({"text": generate_llama_output(prompt, native=True)})
     return jsonify({"text": generate_llama_output(prompt)})
 
 
@@ -1760,6 +1777,8 @@ def generate_deepseek():
     if not prompt:
         return jsonify({"error": "Empty prompt"}), 400
 
+    if data.get("native") is True:
+        return jsonify({"text": generate_deepseek_output(prompt, native=True)})
     return jsonify({"text": generate_deepseek_output(prompt)})
 
 

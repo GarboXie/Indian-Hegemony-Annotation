@@ -4,12 +4,13 @@ import requests
 from config import KEYS
 
 SYSTEM_PROMPT = "Answer in no more than 150 words in English."
+NATIVE_SYSTEM_PROMPT = "Answer in the same language as the user prompt, in no more than 150 words."
 
 GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 
-def _generate_groq(prompt: str, model: str, key_name: str) -> str:
+def _generate_groq(prompt: str, model: str, key_name: str, *, native: bool = False) -> str:
     client = OpenAI(
         api_key=KEYS[key_name],
         base_url=GROQ_BASE_URL
@@ -18,7 +19,7 @@ def _generate_groq(prompt: str, model: str, key_name: str) -> str:
     response = client.chat.completions.create(
         model=model,
         messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": NATIVE_SYSTEM_PROMPT if native else SYSTEM_PROMPT},
             {"role": "user", "content": prompt}
         ],
         reasoning_effort="medium",
@@ -37,12 +38,13 @@ def _generate_openrouter(
     prompt: str,
     model: str,
     key_name: str,
-    reasoning: bool = False
+    reasoning: bool = False,
+    *, native: bool = False,
 ) -> str:
     payload = {
         "model": model,
         "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": NATIVE_SYSTEM_PROMPT if native else SYSTEM_PROMPT},
             {"role": "user", "content": prompt}
         ]
     }
@@ -69,36 +71,40 @@ def _generate_openrouter(
     return choice["message"].get("content") or ""
 
 
-def generate_qwen_output(prompt: str) -> str:
+def generate_qwen_output(prompt: str, *, native: bool = False) -> str:
     return _generate_groq(
         prompt,
         "qwen/qwen3.8-27b",
-        "GROQ_QWEN_API_KEY"
+        "GROQ_QWEN_API_KEY",
+        native=native,
     )
 
 
-def generate_gpt_oss_output(prompt: str) -> str:
+def generate_gpt_oss_output(prompt: str, *, native: bool = False) -> str:
     return _generate_groq(
         prompt,
         "openai/gpt-oss-120b",
-        "GROQ_GPT_OSS_API_KEY"
+        "GROQ_GPT_OSS_API_KEY",
+        native=native,
     )
 
 
-def generate_llama_output(prompt: str) -> str:
+def generate_llama_output(prompt: str, *, native: bool = False) -> str:
     # Send the flag for request consistency; Maverick may ignore it.
     return _generate_openrouter(
         prompt,
         "meta-llama/llama-4-maverick",
         "OPENROUTER_LLAMA_API_KEY",
-        reasoning=True
+        reasoning=True,
+        native=native,
     )
 
 
-def generate_deepseek_output(prompt: str) -> str:
+def generate_deepseek_output(prompt: str, *, native: bool = False) -> str:
     return _generate_openrouter(
         prompt,
         "deepseek/deepseek-v3.2",
         "OPENROUTER_DEEPSEEK_API_KEY",
-        reasoning=True
+        reasoning=True,
+        native=native,
     )

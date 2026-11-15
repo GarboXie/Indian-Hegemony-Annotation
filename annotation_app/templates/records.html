@@ -54,7 +54,7 @@
               <td><pre class="wrapped-pre">{{ r.prompts.base }}</pre></td>
             </tr>
             <tr>
-              <td><strong>Identity</strong></td>
+              <td><strong>{{ "Native" if r.second_prompt_type == "native" else "Identity" }}</strong></td>
               <td><pre class="wrapped-pre">{{ r.prompts.identity }}</pre></td>
             </tr>
           </tbody>
@@ -80,7 +80,7 @@
 
               {% for kind in ["base", "identity"] %}
               <tr>
-                <td><strong>{{ kind|capitalize }}</strong></td>
+                <td><strong>{{ "Native" if kind == "identity" and r.second_prompt_type == "native" else kind|capitalize }}</strong></td>
 
                 <td>
                   <div class="markdown-output is-compact" data-markdown-static>{{- model_data[kind].text -}}</div>
@@ -108,9 +108,13 @@
         {% endfor %}
 
         <p class="mt-2">
-          <strong>Ground Truth</strong>
+          <strong>Ground Truth{% if r.second_prompt_type == "native" %} (English){% endif %}</strong>
         </p>
         <pre class="wrapped-pre">{{ r.ground_truth }}</pre>
+        {% if r.second_prompt_type == "native" %}
+        <p class="has-text-weight-semibold mt-3">Ground Truth (Native)</p>
+        <pre class="wrapped-pre">{{ r.ground_truth_native|default("") }}</pre>
+        {% endif %}
 
         {% if r.references %}
           <h4 class="title is-6">References</h4>

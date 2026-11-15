@@ -62,7 +62,7 @@
                 <td><pre class="wrapped-pre">{{ s.prompts.base }}</pre></td>
               </tr>
               <tr>
-                <th>Identity-Primed Prompt</th>
+                <th>{{ "Native Prompt" if s.second_prompt_type == "native" else "Identity-Primed Prompt" }}</th>
                 <td><pre class="wrapped-pre">{{ s.prompts.identity }}</pre></td>
               </tr>
             </table>
@@ -80,7 +80,7 @@
                 <tr>
                   <th width="15%"></th>
                   <th>Base Output</th>
-                  <th>Identity-Primed Output</th>
+                  <th>{{ "Native Output" if s.second_prompt_type == "native" else "Identity-Primed Output" }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -103,7 +103,7 @@
                 <tr>
                   <th>Axis</th>
                   <th>Base</th>
-                  <th>Identity</th>
+                  <th>{{ "Native" if s.second_prompt_type == "native" else "Identity" }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -132,8 +132,12 @@
 
         <div class="card mb-5">
           <div class="card-content">
-            <h3 class="title is-6">Ground Truth</h3>
+            <h3 class="title is-6">Ground Truth{% if s.second_prompt_type == "native" %} (English){% endif %}</h3>
             <pre class="wrapped-pre">{{ s.ground_truth }}</pre>
+            {% if s.second_prompt_type == "native" %}
+            <p class="has-text-weight-semibold mt-3">Ground Truth (Native)</p>
+            <pre class="wrapped-pre">{{ s.ground_truth_native|default("") }}</pre>
+            {% endif %}
           </div>
         </div>
 

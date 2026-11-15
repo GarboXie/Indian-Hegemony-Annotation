@@ -117,7 +117,7 @@ def build_record(form):
 
             "prompts": {
                 "base": form.get("base_prompt"),
-                "identity": form.get("identity_primed_prompt"),
+                "identity": form.get("native_prompt", form.get("identity_primed_prompt")),
             },
 
             "outputs": {
@@ -175,6 +175,8 @@ def build_record(form):
             },
 
             "ground_truth": form.get("ground_truth"),
+            "ground_truth_native": form.get("ground_truth_native", ""),
+            "second_prompt_type": "native" if "native_prompt" in form else "identity",
             "references": form.get("references", ""),
             "expert_reviews": form.get("expert_reviews", ""),
             "isAccept": form.get("isAccept", ""),
@@ -253,4 +255,5 @@ def json_to_row(record):
     row.append(record.get("isAccept", ""))
     row.append(record.get("annotator_addressed", ""))
 
+    row.extend([record.get("ground_truth_native", ""), record.get("second_prompt_type", "")])
     return row
