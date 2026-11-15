@@ -39,7 +39,10 @@ LEGACY_REVIEW_HEADERS = [
     "needs_adjudication",
     "timestamp",
 ]
-REVIEW_HEADERS = [h for h in LEGACY_REVIEW_HEADERS if h not in {"region", "state"}]
+REVIEW_HEADERS = [
+    h.replace("_identity_", "_native_") for h in LEGACY_REVIEW_HEADERS
+    if h not in {"region", "state"}
+]
 
 _client = gspread.authorize(_creds)
 if not SHEET_ID:
@@ -59,17 +62,14 @@ def _ensure_sheet_headers(worksheet, headers):
     if existing_headers == headers:
         return
 
-    if headers == HEADERS and existing_headers == headers[:-2]:
-        worksheet.resize(cols=max(worksheet.col_count, len(headers)))
-        worksheet.update(
-            gspread.utils.rowcol_to_a1(1, len(existing_headers) + 1),
-            [headers[-2:]],
-            value_input_option="RAW",
-        )
-        return
-
-    if existing_headers:
-        raise ValueError("Sheet schema differs. Run scripts/migrate_singapore_sheet.py before using the updated portal.")
+    # The previous schema used the same column positions with Identity labels.
+    identity_headers = [header.replace("native", "identity", 1)
+                        if header != "ground_truth_native" else header for header in headers]
+    accepted = [identity_headers]
+    if headers == HEADERS:
+        accepted.extend([headers[:-2], identity_headers[:-2]])
+    if existing_headers and existing_headers not in accepted:
+        raise ValueError(f"{worksheet.title}: unexpected sheet headers; no columns renamed.")
 
     worksheet.resize(cols=max(worksheet.col_count, len(headers)))
     worksheet.update(
@@ -84,6 +84,12 @@ def _normalize_yes_no(value: str) -> str:
 
 
 def _row_map_to_record(row_map: dict) -> dict:
+    # Internally, the second output slot retains its name for existing drafts/reviews.
+    row_map = {
+        key.replace("_native_", "_identity_"): value for key, value in row_map.items()
+    }
+    if "native_prompt" in row_map:
+        row_map["identity_prompt"] = row_map["native_prompt"]
     # Preserve internal form/draft aliases while accepting all exported schemas.
     row_map = dict(row_map)
     for mapping in (NEUTRAL_MODEL_COLUMN_KEYS, MODEL_COLUMN_KEYS):

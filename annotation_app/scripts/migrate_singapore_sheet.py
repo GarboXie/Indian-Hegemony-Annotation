@@ -36,10 +36,12 @@ def main():
     from sheets import _open_study_sheet, REVIEW_HEADERS, LEGACY_REVIEW_HEADERS
 
     spreadsheet = _open_study_sheet()
+    previous = [h.replace("native", "identity", 1) for h in HEADERS[:-2]]
     targets = [
-        ('testing', HEADERS[:-2], (LEGACY_HEADERS, NEUTRAL_HEADERS, HEADERS[:-2], HEADERS)),
-        ('testing2', HEADERS[:-2], (LEGACY_HEADERS, NEUTRAL_HEADERS, HEADERS[:-2], HEADERS)),
-        ('testreview', REVIEW_HEADERS, (LEGACY_REVIEW_HEADERS, REVIEW_HEADERS)),
+        ('testing', HEADERS[:-2], (LEGACY_HEADERS, NEUTRAL_HEADERS, previous, HEADERS[:-2], HEADERS)),
+        ('testing2', HEADERS[:-2], (LEGACY_HEADERS, NEUTRAL_HEADERS, previous, HEADERS[:-2], HEADERS)),
+        ('testreview', REVIEW_HEADERS, (LEGACY_REVIEW_HEADERS, REVIEW_HEADERS,
+                                        [h.replace("native", "identity", 1) for h in REVIEW_HEADERS])),
     ]
     snapshots, requests, expected_rows = {}, [], {}
     verified_targets = {}

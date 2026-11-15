@@ -220,8 +220,8 @@ NEUTRAL_HEADERS = [
 ]
 
 HEADERS = [
-    MODEL_COLUMN_KEYS.get(header.split("_", 1)[0], header.split("_", 1)[0])
-    + ("_" + header.split("_", 1)[1] if "_" in header else "")
+    "native_prompt" if header == "identity_prompt" else MODEL_COLUMN_KEYS.get(header.split("_", 1)[0], header.split("_", 1)[0])
+    + ("_" + header.split("_", 1)[1].replace("identity_", "native_", 1) if "_" in header else "")
     for header in LEGACY_HEADERS
     if header not in {"region", "state"}
 ]

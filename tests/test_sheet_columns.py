@@ -51,10 +51,10 @@ class SheetColumns(unittest.TestCase):
         serialized = s['json_to_row'](expected)
         self.assertEqual(len(serialized), 124)
         self.assertEqual(len(set(s['HEADERS'])), 124)
-        self.assertEqual(s['HEADERS'][3:5], ['base_prompt', 'identity_prompt'])
+        self.assertEqual(s['HEADERS'][3:5], ['base_prompt', 'native_prompt'])
         for prefix in ['qwen', 'gpt_oss', 'llama', 'deepseek']:
             self.assertIn(prefix + '_base_output', s['HEADERS'])
-            self.assertIn(prefix + '_identity_ethnic_impact', s['HEADERS'])
+            self.assertIn(prefix + '_native_ethnic_impact', s['HEADERS'])
         for headers in [s['HEADERS'], s['REVIEW_HEADERS']]:
             self.assertNotIn('region', headers)
             self.assertNotIn('state', headers)
@@ -88,6 +88,7 @@ class SheetColumns(unittest.TestCase):
     def test_old_headers_require_explicit_migration(self):
         s = self.s
         class Sheet:
+            title = 'testing'
             def row_values(self, _): return s['NEUTRAL_HEADERS']
         with self.assertRaises(ValueError):
             s['_ensure_sheet_headers'](Sheet(), s['HEADERS'])
