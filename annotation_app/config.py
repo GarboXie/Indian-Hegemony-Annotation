@@ -134,7 +134,7 @@ HEGEMONY_AXES = [
 	"regional"
 ]
 
-SHEET_NAME = "chinese-cultural-hegemony-pilot-annotations"
+SHEET_NAME = "chinese-cultural-hegemony-annotations"
 
 GOOGLE_CREDS_PATH = BASE_DIR / "accounts" / "google_creds.json"
 
