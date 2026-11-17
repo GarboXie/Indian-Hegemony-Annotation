@@ -42,8 +42,8 @@ def cosine_similarity(vec_a, vec_b):
 def embed_prompt_openrouter(prompt):
     # OPENAI_API_KEY is the legacy name for an OpenRouter embedding credential.
     key = next((str(KEYS.get(name) or '').strip() for name in (
-        'OPENROUTER_EMBEDDING_API_KEY', 'OPENROUTER_LLAMA_API_KEY',
-        'OPENROUTER_DEEPSEEK_API_KEY', 'OPENAI_API_KEY',
+        'OPENROUTER_EMBEDDING_API_KEY', 'OPENROUTER_DEEPSEEK_API_KEY',
+        'OPENROUTER_LLAMA_API_KEY', 'OPENAI_API_KEY',
     ) if str(KEYS.get(name) or '').strip()), '')
     if not key:
         raise RuntimeError('No OpenRouter key is configured for similarity checks.')
