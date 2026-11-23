@@ -1,4 +1,5 @@
 """Verify provider reasoning settings without credentials or network calls."""
+import ast
 import importlib.util
 from pathlib import Path
 import sys
@@ -10,6 +11,14 @@ from unittest.mock import Mock, patch
 class LLMReasoning(unittest.TestCase):
     def setUp(self):
         config = types.ModuleType('config')
+        config_path = Path(__file__).resolve().parents[1] / 'annotation_app' / 'config.py'
+        for node in ast.parse(config_path.read_text(encoding="utf-8")).body:
+            if isinstance(node, ast.Assign) and any(
+                isinstance(target, ast.Name) and target.id == "NATIVE_LANGUAGE_CODE"
+                for target in node.targets
+            ):
+                config.NATIVE_LANGUAGE_CODE = ast.literal_eval(node.value)
+        self.language = config.NATIVE_LANGUAGE_CODE
         config.KEYS = {name: 'fake-key' for name in (
             'GROQ_QWEN_API_KEY', 'GROQ_GPT_OSS_API_KEY',
             'OPENROUTER_LLAMA_API_KEY', 'OPENROUTER_DEEPSEEK_API_KEY',
@@ -66,6 +75,37 @@ class LLMReasoning(unittest.TestCase):
                 self.assertEqual(payload['model'], model)
                 self.assertEqual(payload['reasoning'], {'enabled': True})
                 self.assert_unchanged_constraints(payload)
+
+
+    def test_native_language_and_word_limit_reach_all_four_models(self):
+        for function, groq in (
+            ("generate_qwen_output", True),
+            ("generate_gpt_oss_output", True),
+            ("generate_llama_output", False),
+            ("generate_deepseek_output", False),
+        ):
+            with self.subTest(function=function):
+                client = Mock()
+                client.chat.completions.create.return_value.choices = [
+                    types.SimpleNamespace(finish_reason="stop", message=types.SimpleNamespace(
+                        content="Native answer"))
+                ]
+                response = Mock()
+                response.json.return_value = {"choices": [{
+                    "finish_reason": "stop", "message": {"content": "Native answer"}
+                }]}
+                with patch.object(self.module, "OpenAI", return_value=client), patch.object(
+                    self.module.requests, "post", return_value=response
+                ) as post:
+                    answer = getattr(self.module, function)("Native prompt", native=True)
+                self.assertEqual(answer, "Native answer")
+                payload = (client.chat.completions.create.call_args.kwargs if groq
+                           else post.call_args.kwargs["json"])
+                self.assertEqual(payload["messages"][0], {
+                    "role": "system",
+                    "content": f"Answer in no more than 150 words in {self.language} language.",
+                })
+                self.assertEqual(payload["messages"][1]["content"], "Native prompt")
 
 
 if __name__ == '__main__':

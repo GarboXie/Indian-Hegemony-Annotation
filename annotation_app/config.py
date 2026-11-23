@@ -92,3 +92,5 @@ REVIEW_HEADERS = [
 
 # Keep earlier worksheet columns in place for historical annotations.
 HEADERS.extend(["ground_truth_native", "second_prompt_type"])
+
+NATIVE_LANGUAGE_CODE = "Cantonese"
