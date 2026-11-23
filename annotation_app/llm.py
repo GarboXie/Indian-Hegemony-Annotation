@@ -1,10 +1,10 @@
 
 from openai import OpenAI
 import requests
-from config import KEYS
+from config import KEYS, NATIVE_LANGUAGE_CODE
 
 SYSTEM_PROMPT = "Answer in no more than 150 words in English."
-NATIVE_SYSTEM_PROMPT = "Answer in the same language as the user prompt, in no more than 150 words."
+NATIVE_SYSTEM_PROMPT = "Answer in no more than 150 words in {language_code} language."
 
 GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
@@ -19,7 +19,7 @@ def _generate_groq(prompt: str, model: str, key_name: str, *, native: bool = Fal
     response = client.chat.completions.create(
         model=model,
         messages=[
-            {"role": "system", "content": NATIVE_SYSTEM_PROMPT if native else SYSTEM_PROMPT},
+            {"role": "system", "content": NATIVE_SYSTEM_PROMPT.format(language_code=NATIVE_LANGUAGE_CODE) if native else SYSTEM_PROMPT},
             {"role": "user", "content": prompt}
         ],
         reasoning_effort="medium",
@@ -44,7 +44,7 @@ def _generate_openrouter(
     payload = {
         "model": model,
         "messages": [
-            {"role": "system", "content": NATIVE_SYSTEM_PROMPT if native else SYSTEM_PROMPT},
+            {"role": "system", "content": NATIVE_SYSTEM_PROMPT.format(language_code=NATIVE_LANGUAGE_CODE) if native else SYSTEM_PROMPT},
             {"role": "user", "content": prompt}
         ]
     }
