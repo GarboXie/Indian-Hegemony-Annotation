@@ -82,7 +82,7 @@ def extract_hegemony(form, prefix):
 
 def build_record(form):
     print("BUILDING 🪭🪭🪭🪭🪭🪭 RECORD")
-    return {
+    record = {
             "id": str(uuid.uuid4()),
             "timestamp": datetime.utcnow().isoformat(),
             "model_config_version": "singapore_v1_2026_10",
@@ -183,6 +183,14 @@ def build_record(form):
             "annotator_addressed": form.get("annotator_addressed", ""),
         }
 
+    if form.get("second_prompt_type") == "english_only":
+        record["second_prompt_type"] = "english_only"
+        record["ground_truth_native"] = ""
+        record["prompts"]["identity"] = ""
+        for output in record["outputs"].values():
+            output.pop("identity")
+    return record
+
 # =====================================================
 # GOOGLE SHEETS FLATTENING
 # =====================================================
@@ -214,6 +222,10 @@ def json_to_row(record):
         }
         """
 
+        if block is None:
+            row.extend([""] * (2 + 2 * len(HEGEMONY_AXES)))
+            return
+
         # 1️⃣ text
         row.append(block.get("text", ""))
 
@@ -228,19 +240,19 @@ def json_to_row(record):
 
     # ========= GEMINI =========
     append_output(record["outputs"]["gemini"]["base"])
-    append_output(record["outputs"]["gemini"]["identity"])
+    append_output(record["outputs"]["gemini"].get("identity"))
 
     # ========= GPT =========
     append_output(record["outputs"]["gpt"]["base"])
-    append_output(record["outputs"]["gpt"]["identity"])
+    append_output(record["outputs"]["gpt"].get("identity"))
 
     # ========= LLAMA =========
     append_output(record["outputs"]["llama"]["base"])
-    append_output(record["outputs"]["llama"]["identity"])
+    append_output(record["outputs"]["llama"].get("identity"))
 
     # ========= DeepSeek =========
     append_output(record["outputs"]["deepseek"]["base"])
-    append_output(record["outputs"]["deepseek"]["identity"])
+    append_output(record["outputs"]["deepseek"].get("identity"))
 
     # --- ground truth ---
     row.append(record.get("ground_truth", ""))

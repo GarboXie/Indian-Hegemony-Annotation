@@ -103,7 +103,7 @@ class LLMReasoning(unittest.TestCase):
                            else post.call_args.kwargs["json"])
                 self.assertEqual(payload["messages"][0], {
                     "role": "system",
-                    "content": f"Answer in no more than 150 words in {self.language} language.",
+                    "content": "Answer in no more than 150 words in English.",
                 })
                 self.assertEqual(payload["messages"][1]["content"], "Native prompt")
 

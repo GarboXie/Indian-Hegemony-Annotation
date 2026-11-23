@@ -1,5 +1,6 @@
 """Isolated integration checks; model calls are mocked, never sent externally."""
 import os
+import re
 import sys
 import tempfile
 import unittest
@@ -44,6 +45,10 @@ class SingaporeFlow(unittest.TestCase):
             html = client.get('/').get_data(as_text=True)
             self.assertIn('Singapore', html)
             self.assertNotIn('qwen/qwen', html)
+            self.assertNotIn('id="second_prompt_input"', html)
+            self.assertNotIn('name="ground_truth_native"', html)
+            self.assertEqual(len(re.findall(r'data-output-preview-for="\w+_llm_output_base"', html)), 4)
+            self.assertNotIn('name="gemini_identity_output"', html)
             # Similarity requires no geographic field and distinguishes an empty index.
             query = 'A sufficiently long Singapore prompt to test semantic similarity.'
             with patch.object(app, 'load_prompt_index', return_value={'items': {}}), patch.object(app, 'find_similar_for_state', return_value=[]):
@@ -105,6 +110,82 @@ class SingaporeFlow(unittest.TestCase):
             self.assertIn('qwen_base_output', exported.get_data(as_text=True))
             self.assertNotIn('region', exported.get_data(as_text=True).splitlines()[0].split(','))
             self.assertNotIn('state', exported.get_data(as_text=True).splitlines()[0].split(','))
+
+            # New English-only work can save an incomplete draft and then submit
+            # with one prompt, four answers and one ground truth.
+            client.get('/freshannotate')
+            english_form = dict(
+                annotator_name='test-user', base_prompt='English Singapore prompt',
+                second_prompt_type='english_only', ground_truth='English ground truth',
+            )
+            for model in ['gemini', 'gpt', 'llama', 'deepseek']:
+                english_form[f'{model}_base_output'] = f'English {model} answer'
+            draft = client.post('/save-annotation-draft', data={
+                **english_form, 'ground_truth': '',
+            })
+            self.assertEqual(draft.status_code, 200)
+            english_id = draft.json['annotation_id']
+            self.assertEqual(client.post('/', data={
+                **english_form, 'ground_truth': '',
+            }).status_code, 400)
+            reviewed = client.post('/', data=english_form)
+            self.assertEqual(reviewed.status_code, 200)
+            review_html = reviewed.get_data(as_text=True)
+            self.assertNotIn('Native Output', review_html)
+            self.assertNotIn('Identity-Primed', review_html)
+            self.assertNotIn('Ground Truth (Native)', review_html)
+            self.assertEqual(client.post('/confirm').status_code, 302)
+            english = next(r for r in storage.load_records() if r['id'] == english_id)
+            self.assertTrue(app._is_annotation_completed(english))
+            self.assertTrue(all(list(output) == ['base'] for output in english['outputs'].values()))
+            self.assertEqual(len(storage.load_records()), 2)
+            # Saved English-only drafts reload in the same one-prompt layout.
+            self.assertEqual(client.post('/load-annotation', data={
+                'annotation_id': english_id,
+            }).status_code, 302)
+            reloaded = client.get('/').get_data(as_text=True)
+            self.assertNotIn('id="second_prompt_input"', reloaded)
+            self.assertEqual(len(re.findall(r'data-output-preview-for="\w+_llm_output_base"', reloaded)), 4)
+            # Public record views retain English answers and historical native text.
+            listing = client.get('/records').get_data(as_text=True)
+            self.assertIn('English gemini answer', listing)
+            self.assertIn('本地語言提示', listing)
+            examples = client.get('/examples').get_data(as_text=True)
+            self.assertIn('English gemini answer', examples)
+            admin_html = client.get('/admin').get_data(as_text=True)
+            self.assertIn('English Singapore prompt', admin_html)
+            # Peer reviews of English-only records require only four output ratings.
+            review_form = {
+                'prompt_q0': '4', 'prompt_q2': '4', 'prompt_q3': '4',
+                'prompt_q2_comment': 'Relevant context', 'ground_truth_rating': '4',
+                'overall_annotation_impact': '4',
+                'overall_annotation_impact_comment': 'Good annotation',
+                'reviewer_confidence': '4',
+            }
+            for model in ['gemini', 'gpt', 'llama', 'deepseek']:
+                for question in ['q2', 'q3', 'q4']:
+                    review_form[f'{model}_base_{question}'] = '4'
+                    review_form[f'{model}_base_{question}_comment'] = 'Reviewed'
+            with patch.object(app, '_reviewable_records_for_user', return_value=[english]), patch.object(
+                app, '_is_iaa_approved_record', return_value=True
+            ):
+                peer_page = client.get('/review/' + english_id)
+                self.assertEqual(peer_page.status_code, 200)
+                self.assertNotIn('name="gemini_identity_q2"', peer_page.get_data(as_text=True))
+                peer_saved = client.post('/submit_review', data={
+                    **review_form, 'annotation_id': english_id,
+                })
+                self.assertEqual(peer_saved.status_code, 302)
+            peer = iaa_store.fetch_iaa_review(english_id, 'test-admin')
+            self.assertEqual(peer['model1_base_q1'], 4)
+            self.assertIsNone(peer['model1_identity_q1'])
+            # Earlier bilingual drafts still show their saved native fields.
+            with client.session_transaction() as session:
+                session['draft_id'] = draft_store.save_draft(record)
+            legacy_page = client.get('/').get_data(as_text=True)
+            self.assertIn('id="second_prompt_input"', legacy_page)
+            self.assertIn('name="ground_truth_native"', legacy_page)
+            self.assertIn('本地語言提示', legacy_page)
 
 
 if __name__ == '__main__':

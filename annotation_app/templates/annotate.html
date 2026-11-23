@@ -1,5 +1,8 @@
 {% extends "layout/base.html" %}
 
+{% set english_only = not draft or draft.second_prompt_type|default("") == "english_only" %}
+{% set legacy_identity = draft and draft.second_prompt_type|default("") not in ["native", "english_only"] %}
+
 {% block styles %}
 {{ super() }}
 <style>
@@ -178,6 +181,10 @@
           <input type="hidden" name="isAccept" value="{{ draft.isAccept if draft else '' }}">
           {% set sticky_review_status = (draft.isAccept if draft else "") | default("", true) | trim | lower %}
 
+          {% if english_only %}
+          <input type="hidden" name="second_prompt_type" value="english_only">
+          {% endif %}
+
           <!-- Region / State -->
           <div class="card mb-5">
             <div class="card-content">
@@ -222,8 +229,8 @@
                   <div id="similarity_results" class="notification is-light is-hidden mt-3"></div>
                 </div>
 
+                {% if not english_only %}
                 <div class="column">
-                  {% set legacy_identity = draft and draft.second_prompt_type|default("") != "native" %}
                   <label class="label" for="second_prompt_input">{{ "Identity-Primed Prompt" if legacy_identity else "Native Prompt" }}</label>
                   <textarea class="textarea"
                             id="second_prompt_input"
@@ -231,6 +238,7 @@
                             rows="3"
                             required>{{ draft.prompts.identity if draft }}</textarea>
                 </div>
+                {% endif %}
               </div>
 
             </div>
@@ -256,7 +264,7 @@
 
                 <div class="columns is-variable is-6">
 
-                  {% for kind in ["base", "identity"] %}
+                  {% for kind in (["base"] if english_only else ["base", "identity"]) %}
                   <div class="column">
                     <div class="card">
                       <div class="card-content">
@@ -318,7 +326,7 @@
                           rows="15"
                           >{{ draft.ground_truth if draft }}</textarea>
               </div>
-              {% if not legacy_identity %}
+              {% if not english_only and not legacy_identity %}
               <div class="field">
                 <label class="label" for="ground_truth_native">Ground Truth (Native)</label>
                 <textarea class="textarea" id="ground_truth_native" name="ground_truth_native"

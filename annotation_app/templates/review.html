@@ -178,10 +178,12 @@
             <th width="20%">Base Prompt</th>
             <td><pre class="wrapped-pre">{{ record.prompts.base }}</pre></td>
           </tr>
+{% if record.second_prompt_type != "english_only" %}
           <tr>
             <th>{{ "Native Prompt" if record.second_prompt_type == "native" else "Identity-Primed Prompt" }}</th>
             <td><pre class="wrapped-pre">{{ record.prompts.identity }}</pre></td>
           </tr>
+{% endif %}
         </table>
 
       </div>
@@ -202,14 +204,18 @@
             <tr>
               <th width="15%"></th>
               <th>Base Output</th>
+              {% if record.second_prompt_type != "english_only" %}
               <th>{{ "Native Output" if record.second_prompt_type == "native" else "Identity-Primed Output" }}</th>
+              {% endif %}
             </tr>
           </thead>
           <tbody>
             <tr>
               <th>Text</th>
               <td><div class="markdown-output is-compact" data-markdown-static>{{- model_data.base.text -}}</div></td>
+              {% if record.second_prompt_type != "english_only" %}
               <td><div class="markdown-output is-compact" data-markdown-static>{{- model_data.identity.text -}}</div></td>
+              {% endif %}
             </tr>
 
             <tr>
@@ -223,6 +229,7 @@
                 {% endif %}
               </td>
 
+              {% if record.second_prompt_type != "english_only" %}
               <td>
                 {% if model_data.identity.hallucination == "yes" %}
                   <span>Yes</span>
@@ -230,6 +237,7 @@
                   <span>No</span>
                 {% endif %}
               </td>
+              {% endif %}
             </tr>
           </tbody>
         </table>
@@ -241,7 +249,9 @@
             <tr>
               <th>Axis</th>
               <th>Base</th>
+              {% if record.second_prompt_type != "english_only" %}
               <th>{{ "Native" if record.second_prompt_type == "native" else "Identity" }}</th>
+              {% endif %}
             </tr>
           </thead>
           <tbody>
@@ -256,12 +266,14 @@
                 {% endif %}
               </td>
 
+              {% if record.second_prompt_type != "english_only" %}
               <td>
                 {{ model_data.identity.hegemony[axis].present }}
                 {% if model_data.identity.hegemony[axis].impact %}
                   — {{ model_data.identity.hegemony[axis].impact }}
                 {% endif %}
               </td>
+              {% endif %}
             </tr>
             {% endfor %}
           </tbody>

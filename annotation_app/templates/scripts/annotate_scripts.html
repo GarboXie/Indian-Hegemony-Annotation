@@ -91,7 +91,7 @@ async function generateOutput(model, kind) {
     const response = await fetch(`/generate/${model}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, native: kind !== "base" && secondPrompt.name === "native_prompt" })
+      body: JSON.stringify({ prompt, native: kind !== "base" && secondPrompt && secondPrompt.name === "native_prompt" })
     });
 
     const data = await response.json();

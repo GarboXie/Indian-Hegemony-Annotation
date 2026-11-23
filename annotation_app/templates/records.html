@@ -53,10 +53,12 @@
               <td><strong>Base</strong></td>
               <td><pre class="wrapped-pre">{{ r.prompts.base }}</pre></td>
             </tr>
+            {% if r.second_prompt_type != "english_only" %}
             <tr>
               <td><strong>{{ "Native" if r.second_prompt_type == "native" else "Identity" }}</strong></td>
               <td><pre class="wrapped-pre">{{ r.prompts.identity }}</pre></td>
             </tr>
+            {% endif %}
           </tbody>
         </table>
 
@@ -78,7 +80,7 @@
             </thead>
             <tbody>
 
-              {% for kind in ["base", "identity"] %}
+              {% for kind in (["base"] if r.second_prompt_type == "english_only" else ["base", "identity"]) %}
               <tr>
                 <td><strong>{{ "Native" if kind == "identity" and r.second_prompt_type == "native" else kind|capitalize }}</strong></td>
 

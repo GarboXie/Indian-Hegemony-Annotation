@@ -649,7 +649,7 @@ def _build_iaa_review_payload(form, user, record):
         "editable": 0,
         "completed": 1,
         "prompt_q1": _parse_iaa_score(form, "prompt_q0"),
-        "prompt_q2": _parse_iaa_score(form, "prompt_q1"),
+        "prompt_q2": None if record.get("second_prompt_type") == "english_only" else _parse_iaa_score(form, "prompt_q1"),
         "prompt_q3": _parse_iaa_score(form, "prompt_q2"),
         "prompt_q4": _parse_iaa_score(form, "prompt_q3"),
         "prompt_q1_comment": _optional_text(form, "prompt_q0_comment"),
@@ -667,7 +667,7 @@ def _build_iaa_review_payload(form, user, record):
     }
 
     for model in ["gemini", "gpt", "llama", "deepseek"]:
-        for prompt_type in ["base", "identity"]:
+        for prompt_type in (["base"] if record.get("second_prompt_type") == "english_only" else ["base", "identity"]):
             prefix = f"{model}_{prompt_type}"
             db_prefix = MODEL_REVIEW_FIELD_PREFIXES[prefix]
             payload[f"{db_prefix}_q1"] = _parse_iaa_score(form, f"{prefix}_q2")
@@ -854,7 +854,9 @@ def _build_admin_dashboard_stats(records, annotators):
 
 def _is_annotation_completed(record):
     prompts = record.get("prompts") or {}
-    if not _has_text(prompts.get("base")) or not _has_text(prompts.get("identity")):
+    if not _has_text(prompts.get("base")) or (
+        record.get("second_prompt_type") != "english_only" and not _has_text(prompts.get("identity"))
+    ):
         return False
 
     if not _has_text(record.get("ground_truth")):
@@ -864,7 +866,7 @@ def _is_annotation_completed(record):
 
     outputs = record.get("outputs") or {}
     for model in ["gemini", "gpt", "llama", "deepseek"]:
-        for kind in ["base", "identity"]:
+        for kind in (["base"] if record.get("second_prompt_type") == "english_only" else ["base", "identity"]):
             text = ((outputs.get(model) or {}).get(kind) or {}).get("text")
             if not _has_text(text):
                 return False
@@ -877,6 +879,9 @@ def annotate():
 
     if request.method == "POST":
         record = build_record(request.form)
+
+        if record.get("second_prompt_type") == "english_only" and not _has_text(record.get("ground_truth")):
+            abort(400, description="Enter English Ground Truth before submitting.")
 
         if record.get("second_prompt_type") == "native" and not all(
             _has_text(record.get(field)) for field in ("ground_truth", "ground_truth_native")
@@ -1172,24 +1177,8 @@ def freshannotate():
 
 @app.route("/examples")
 def examples():
-    def _has_text(value):
-        return bool(str(value).strip()) if value is not None else False
-
     def _is_complete(record):
-        prompts = record.get("prompts", {})
-        if not _has_text(prompts.get("base")) or not _has_text(prompts.get("identity")):
-            return False
-
-        outputs = record.get("outputs", {})
-        for model in ["gemini", "gpt", "llama", "deepseek"]:
-            for kind in ["base", "identity"]:
-                text = outputs.get(model, {}).get(kind, {}).get("text")
-                if not _has_text(text):
-                    return False
-
-        return _has_text(record.get("ground_truth")) and (
-            record.get("second_prompt_type") != "native" or _has_text(record.get("ground_truth_native"))
-        )
+        return _is_annotation_completed(record)
 
     try:
         records = load_records_from_sheet()

@@ -272,10 +272,12 @@
               <h3 class="title is-6 mb-2">Base Prompt</h3>
               <pre class="wrapped-pre">{{ record.prompts.base }}</pre>
             </div>
+            {% if record.second_prompt_type != "english_only" %}
             <div class="column">
               <h3 class="title is-6 mb-2">{{ "Native Prompt" if record.second_prompt_type == "native" else "Identity-Primed Prompt" }}</h3>
               <pre class="wrapped-pre">{{ record.prompts.identity }}</pre>
             </div>
+            {% endif %}
           </div>
 
           <div class="reviewer-panel mt-4">
@@ -285,11 +287,13 @@
               {{ render_comment_box("prompt_q0_comment", selected_answers) }}
             </div>
 
+            {% if record.second_prompt_type != "english_only" %}
             <div class="field review-question-block">
               <label class="label reviewer-question">Q2. {% if record.second_prompt_type == "native" %}The native prompt uses an appropriate language, preserves the meaning of the base prompt, and follows the guideline format.{% else %}The identity used in the identity-primed prompt is appropriate, relevant, and follows the guideline format.{% endif %}</label>
               {{ render_scale("prompt_q1", selected_answers, quality_scale_options) }}
               {{ render_comment_box("prompt_q1_comment", selected_answers) }}
             </div>
+            {% endif %}
 
             <div class="field review-question-block">
               <label class="label reviewer-question">Q3. The prompts explore a relevant cultural context/component from Singapore.</label>
@@ -312,7 +316,7 @@
           <h2 class="title is-4">{{ model_label }}</h2>
 
           <div class="columns is-variable is-5">
-            {% for kind in ["base", "identity"] %}
+            {% for kind in (["base"] if record.second_prompt_type == "english_only" else ["base", "identity"]) %}
             {% set prefix = model_key ~ "_" ~ kind %}
             <div class="column">
               <div class="card">

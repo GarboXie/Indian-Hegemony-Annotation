@@ -119,7 +119,7 @@ def _row_map_to_record(row_map: dict) -> dict:
 
     for model in ["gemini", "gpt", "llama", "deepseek"]:
         record["outputs"][model] = {}
-        for kind in ["base", "identity"]:
+        for kind in (["base"] if record.get("second_prompt_type") == "english_only" else ["base", "identity"]):
             prefix = f"{model}_{kind}"
             hegemony = {}
 

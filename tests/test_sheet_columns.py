@@ -85,6 +85,24 @@ class SheetColumns(unittest.TestCase):
             self.assertEqual(rows[1], [v for h, v in zip(old, data) if h not in {'state', 'region'}])
             self.assertEqual(rows[2], ['short'] + [''] * (len(new) - 1))
 
+    def test_english_only_sheet_roundtrip_uses_blank_native_columns(self):
+        s = self.s
+        old_row, _ = self.record()
+        row_map = {
+            key: value for key, value in old_row.items()
+            if 'identity' not in key
+        }
+        row_map['second_prompt_type'] = 'english_only'
+        record = s['_row_map_to_record'](row_map)
+        self.assertTrue(all(list(output) == ['base'] for output in record['outputs'].values()))
+        serialized = s['json_to_row'](record)
+        self.assertEqual(len(serialized), len(s['HEADERS']))
+        exported = dict(zip(s['HEADERS'], serialized))
+        for header, value in exported.items():
+            if 'native' in header:
+                self.assertEqual(value, '', header)
+        self.assertEqual(s['_row_map_to_record'](exported), record)
+
     def test_old_headers_require_explicit_migration(self):
         s = self.s
         class Sheet:
